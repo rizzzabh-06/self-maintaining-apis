@@ -8,8 +8,8 @@ Detects external API changes, finds affected code, generates bounded migrations,
 |---|---|
 | 1. Fixtures (FakePay v1/v2 + demo-checkout) | ✅ Complete |
 | 2. Change Engine (structural diff → api_changes) | ✅ Complete |
-| 3. Repository Scanner | 🔲 Next |
-| 4. Impact Engine | 🔲 |
+| 3. Repository Scanner | ✅ Complete |
+| 4. Impact Engine | 🔲 Next |
 | 5. Migration Engine | 🔲 |
 | 6. Sandbox + Validation | 🔲 |
 | 7. GitHub Adapter | 🔲 |
