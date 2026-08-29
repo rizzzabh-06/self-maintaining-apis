@@ -1,0 +1,120 @@
+openapi: "3.0.3"
+info:
+  title: FakePay API
+  version: "2.0.0"
+  description: A fixture payment API used for testing the Self-Maintaining API Agent.
+
+servers:
+  - url: https://api.fakepay.dev/v2
+
+paths:
+  /payments:
+    post:
+      operationId: createPayment
+      summary: Create a payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentRequest"
+      responses:
+        "201":
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /payments/{id}:
+    get:
+      operationId: getPayment
+      summary: Retrieve a payment by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Payment details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "404":
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    CreatePaymentRequest:
+      type: object
+      required:
+        - amount
+        - source
+        - currency
+      properties:
+        amount:
+          type: integer
+          description: Amount in smallest currency unit (e.g. cents).
+          example: 5000
+        currency:
+          type: string
+          description: ISO 4217 currency code. Now required.
+          example: "usd"
+        source:
+          type: string
+          description: Payment source token.
+          example: "tok_visa_4242"
+        description:
+          type: string
+          description: Arbitrary description for the payment.
+          example: "Order #1234"
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "pay_abc123"
+        status:
+          type: string
+          enum: [pending, succeeded, failed]
+          example: "succeeded"
+        amount:
+          type: integer
+          example: 5000
+        currency:
+          type: string
+          example: "usd"
+        source:
+          type: string
+          example: "tok_visa_4242"
+        description:
+          type: string
+          example: "Order #1234"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "invalid_request"
+        message:
+          type: string
+          example: "amount is required"

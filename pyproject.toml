@@ -1,0 +1,23 @@
+[project]
+name = "self-maintaining-apis"
+version = "0.1.0"
+description = "Self-Maintaining API Agent — detects external API changes, generates bounded migrations, validates in sandbox, opens draft PRs."
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"

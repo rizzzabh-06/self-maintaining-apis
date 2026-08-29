@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+self_maintaining_apis.egg-info/PKG-INFO
+self_maintaining_apis.egg-info/SOURCES.txt
+self_maintaining_apis.egg-info/dependency_links.txt
+self_maintaining_apis.egg-info/requires.txt
+self_maintaining_apis.egg-info/top_level.txt
+tests/test_fixtures.py

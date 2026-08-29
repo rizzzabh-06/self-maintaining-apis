@@ -1,0 +1,39 @@
+{
+  "provider": "fakepay",
+  "from_version": "1.0.0",
+  "to_version": "2.0.0",
+  "date": "2025-06-01",
+  "changes": [
+    {
+      "type": "endpoint_renamed",
+      "breaking": true,
+      "description": "POST /payment renamed to POST /payments",
+      "old_path": "/payment",
+      "new_path": "/payments",
+      "method": "POST",
+      "operation_id": "createPayment"
+    },
+    {
+      "type": "endpoint_renamed",
+      "breaking": true,
+      "description": "GET /payment/{id} renamed to GET /payments/{id}",
+      "old_path": "/payment/{id}",
+      "new_path": "/payments/{id}",
+      "method": "GET",
+      "operation_id": "getPayment"
+    },
+    {
+      "type": "field_required",
+      "breaking": true,
+      "description": "currency field in CreatePaymentRequest is now required (was optional, defaulted to USD)",
+      "path": "/payments",
+      "method": "POST",
+      "operation_id": "createPayment",
+      "location": "requestBody",
+      "schema": "CreatePaymentRequest",
+      "field": "currency",
+      "old_required": false,
+      "new_required": true
+    }
+  ]
+}
