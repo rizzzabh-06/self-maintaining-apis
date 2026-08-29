@@ -11,8 +11,8 @@ Detects external API changes, finds affected code, generates bounded migrations,
 | 3. Repository Scanner | ✅ Complete |
 | 4. Impact Engine | ✅ Complete |
 | 5. Migration Engine | ✅ Complete |
-| 6. Sandbox + Validation | 🔲 Next |
-| 7. GitHub Adapter | 🔲 |
+| 6. Sandbox + Validation | ✅ Complete |
+| 7. GitHub Adapter | 🔲 Next |
 | 8. Webhook Receiver | 🔲 |
 
 ## Architecture
