@@ -10,8 +10,8 @@ Detects external API changes, finds affected code, generates bounded migrations,
 | 2. Change Engine (structural diff → api_changes) | ✅ Complete |
 | 3. Repository Scanner | ✅ Complete |
 | 4. Impact Engine | ✅ Complete |
-| 5. Migration Engine | 🔲 Next |
-| 6. Sandbox + Validation | 🔲 |
+| 5. Migration Engine | ✅ Complete |
+| 6. Sandbox + Validation | 🔲 Next |
 | 7. GitHub Adapter | 🔲 |
 | 8. Webhook Receiver | 🔲 |
 
