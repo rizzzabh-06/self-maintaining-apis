@@ -1,4 +1,4 @@
-"""SQLAlchemy database models for Neon Lakebase Postgres."""
+"""SQLAlchemy database models for Neon Lakebase Postgres including GitHub App & Onboarding."""
 
 from __future__ import annotations
 
@@ -19,14 +19,57 @@ from sqlalchemy.orm import relationship
 from apps.api.app.db.session import Base
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String(64), primary_key=True)
+    email = Column(String(255), nullable=True, unique=True)
+    name = Column(String(255), nullable=True)
+    avatar_url = Column(String(512), nullable=True)
+    github_id = Column(String(64), nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
 class Organization(Base):
     __tablename__ = "organizations"
 
     id = Column(String(64), primary_key=True)
     name = Column(String(255), nullable=False)
+    slug = Column(String(128), nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     repositories = relationship("Repository", back_populates="organization")
+    installations = relationship("GitHubAppInstallation", back_populates="organization")
+    automation = relationship("AutomationSettings", back_populates="organization", uselist=False)
+
+
+class GitHubAppInstallation(Base):
+    __tablename__ = "github_installations"
+
+    id = Column(String(64), primary_key=True)  # installation_id
+    organization_id = Column(String(64), ForeignKey("organizations.id"), nullable=True)
+    account_login = Column(String(255), nullable=False)
+    account_type = Column(String(32), default="User")  # User or Organization
+    access_token = Column(Text, nullable=True)
+    token_expires_at = Column(DateTime, nullable=True)
+    selected_repositories = Column(JSON, nullable=True)  # list of repo full names
+    installed_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    organization = relationship("Organization", back_populates="installations")
+
+
+class AutomationSettings(Base):
+    __tablename__ = "automation_settings"
+
+    id = Column(String(64), primary_key=True)
+    organization_id = Column(String(64), ForeignKey("organizations.id"), nullable=False)
+    auto_scan_on_push = Column(Boolean, default=True)
+    auto_pr_on_breaking = Column(Boolean, default=True)
+    confidence_threshold = Column(Float, default=0.90)
+    draft_pr_only = Column(Boolean, default=True)  # Strictly True
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    organization = relationship("Organization", back_populates="automation")
 
 
 class Repository(Base):
@@ -36,8 +79,11 @@ class Repository(Base):
     organization_id = Column(String(64), ForeignKey("organizations.id"), nullable=True)
     name = Column(String(255), nullable=False)
     github_repo = Column(String(255), nullable=False)
+    github_id = Column(Integer, nullable=True)
     default_branch = Column(String(64), default="main")
     language = Column(String(32), default="TypeScript")
+    is_monitored = Column(Boolean, default=True)
+    status = Column(String(32), default="ready")  # ready, scanning, error
     last_scanned_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -53,6 +99,7 @@ class Provider(Base):
     name = Column(String(128), nullable=False, unique=True)
     slug = Column(String(64), nullable=False, unique=True)
     webhook_secret = Column(String(255), nullable=True)
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     versions = relationship("APIVersion", back_populates="provider")

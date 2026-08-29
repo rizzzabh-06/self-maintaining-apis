@@ -1,4 +1,4 @@
-/** API client for the FastAPI backend. */
+/** API client for the FastAPI backend and Neon Lakebase Postgres. */
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
@@ -7,13 +7,80 @@ export async function fetchHealth() {
   return res.json();
 }
 
-export async function fetchProviders() {
-  const res = await fetch(`${API_BASE}/api/inventory/providers`);
+export async function fetchSession() {
+  const res = await fetch(`${API_BASE}/api/auth/session`);
   return res.json();
 }
 
-export async function fetchRepositories() {
-  const res = await fetch(`${API_BASE}/api/inventory/repositories`);
+export async function fetchGitHubAuthorizeUrl() {
+  const res = await fetch(`${API_BASE}/api/auth/github/authorize-url`);
+  return res.json();
+}
+
+export async function connectGitHub(token?: string, accountLogin?: string) {
+  const res = await fetch(`${API_BASE}/api/auth/github/connect`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, account_login: accountLogin }),
+  });
+  return res.json();
+}
+
+export async function disconnectGitHub() {
+  const res = await fetch(`${API_BASE}/api/auth/github/disconnect`, {
+    method: "POST",
+  });
+  return res.json();
+}
+
+export async function fetchGitHubRepositories() {
+  const res = await fetch(`${API_BASE}/api/repositories/github`);
+  return res.json();
+}
+
+export async function fetchConnectedRepositories() {
+  const res = await fetch(`${API_BASE}/api/repositories`);
+  return res.json();
+}
+
+export const fetchRepositories = fetchConnectedRepositories;
+
+export async function connectRepository(githubRepo: string, name?: string) {
+  const res = await fetch(`${API_BASE}/api/repositories/connect`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ github_repo: githubRepo, name }),
+  });
+  return res.json();
+}
+
+export async function triggerRepositoryScan(repositoryId: string) {
+  const res = await fetch(`${API_BASE}/api/repositories/${encodeURIComponent(repositoryId)}/scan`, {
+    method: "POST",
+  });
+  return res.json();
+}
+
+export async function fetchAutomationSettings() {
+  const res = await fetch(`${API_BASE}/api/automation`);
+  return res.json();
+}
+
+export async function updateAutomationSettings(settings: {
+  auto_scan_on_push: boolean;
+  auto_pr_on_breaking: boolean;
+  confidence_threshold: number;
+}) {
+  const res = await fetch(`${API_BASE}/api/automation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(settings),
+  });
+  return res.json();
+}
+
+export async function fetchProviders() {
+  const res = await fetch(`${API_BASE}/api/inventory/providers`);
   return res.json();
 }
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import List, Type
 
@@ -11,6 +12,7 @@ from .models import MigrationPlan, FilePatch
 from .recipes.base import MigrationRecipe
 from .recipes.fakepay import FakePayV1ToV2Recipe
 from .llm.base import LLMProvider, StubLLMProvider
+from .llm.gemini import GeminiLLMProvider
 
 # Active recipe registry
 RECIPE_REGISTRY: list[Type[MigrationRecipe]] = [
@@ -40,7 +42,12 @@ def generate_migration_plan(
             return recipe.apply(root, changes, impact_report)
 
     # 2. LLM Fallback (bounded context)
-    provider_inst = llm_provider or StubLLMProvider()
+    if llm_provider:
+        provider_inst = llm_provider
+    elif os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"):
+        provider_inst = GeminiLLMProvider()
+    else:
+        provider_inst = StubLLMProvider()
     steps: list[str] = []
     patches: list[FilePatch] = []
 

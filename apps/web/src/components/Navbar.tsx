@@ -1,23 +1,27 @@
-import { ShieldCheck, GitPullRequest, Activity, Boxes, AlertTriangle } from "lucide-react";
+import React from "react";
+import { ShieldCheck, GitPullRequest, Activity, Boxes, AlertTriangle, FolderGit2, Sliders, Sparkles } from "lucide-react";
 
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  onOpenOnboarding: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
+export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenOnboarding }) => {
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: Activity },
+    { id: "repositories", label: "Repositories", icon: FolderGit2 },
     { id: "inventory", label: "API Inventory", icon: Boxes },
     { id: "changes", label: "Breaking Changes", icon: AlertTriangle },
     { id: "impact", label: "Impact Analysis", icon: ShieldCheck },
     { id: "migration", label: "Migration Console", icon: GitPullRequest },
+    { id: "settings", label: "Settings", icon: Sliders },
   ];
 
   return (
     <header style={{
       borderBottom: "1px solid var(--border-subtle)",
-      background: "rgba(8, 12, 20, 0.8)",
+      background: "rgba(8, 12, 20, 0.85)",
       backdropFilter: "blur(20px)",
       position: "sticky",
       top: 0,
@@ -57,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
         </div>
 
         {/* Navigation Tabs */}
-        <nav style={{ display: "flex", gap: "6px" }}>
+        <nav style={{ display: "flex", gap: "4px" }}>
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -68,10 +72,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "8px",
-                  padding: "8px 16px",
+                  gap: "7px",
+                  padding: "7px 14px",
                   borderRadius: "8px",
-                  fontSize: "0.85rem",
+                  fontSize: "0.83rem",
                   fontWeight: isActive ? 600 : 500,
                   color: isActive ? "#ffffff" : "var(--text-secondary)",
                   background: isActive ? "rgba(99, 102, 241, 0.18)" : "transparent",
@@ -80,29 +84,38 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                   transition: "all 0.15s ease",
                 }}
               >
-                <Icon size={16} color={isActive ? "var(--accent-cyan)" : "currentColor"} />
+                <Icon size={15} color={isActive ? "var(--accent-cyan)" : "currentColor"} />
                 {tab.label}
               </button>
             );
           })}
         </nav>
 
-        {/* Status indicator */}
-        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+        {/* Quick Actions & Status */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <button 
+            className="btn-primary" 
+            onClick={onOpenOnboarding}
+            style={{ padding: "7px 14px", fontSize: "0.78rem" }}
+          >
+            <Sparkles size={14} />
+            <span>9-Step Setup Wizard</span>
+          </button>
+
           <div style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
+            gap: "7px",
             background: "rgba(16, 185, 129, 0.1)",
-            padding: "5px 12px",
+            padding: "5px 10px",
             borderRadius: "20px",
             border: "1px solid rgba(16, 185, 129, 0.25)",
-            fontSize: "0.75rem",
+            fontSize: "0.72rem",
             color: "#34d399",
             fontWeight: 600,
           }}>
             <span className="pulse-dot" />
-            <span>Neon Lakebase Postgres</span>
+            <span>Neon Postgres</span>
           </div>
         </div>
       </div>
