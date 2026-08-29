@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Boxes, Search, Code2, MapPin, CheckCircle } from "lucide-react";
-import { fetchUsages, fetchProviders, fetchRepositories } from "../api/client";
+import { useEffect, useState } from "react";
+import { Boxes, Search, MapPin, CheckCircle } from "lucide-react";
+import { fetchUsages } from "../api/client";
 
 export const Inventory: React.FC = () => {
   const [usages, setUsages] = useState<any[]>([]);

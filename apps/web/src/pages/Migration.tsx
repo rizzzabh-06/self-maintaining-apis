@@ -1,15 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { 
   GitPullRequest, 
   Play, 
-  CheckCircle2, 
   Clock, 
   FileCode2, 
   ShieldCheck, 
-  AlertCircle, 
-  ExternalLink,
-  Terminal,
-  Sparkles
+  ExternalLink
 } from "lucide-react";
 import { triggerMigration } from "../api/client";
 

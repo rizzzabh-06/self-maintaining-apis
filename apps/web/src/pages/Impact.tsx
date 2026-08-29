@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { ShieldCheck, FileCode, AlertOctagon, CheckCircle2, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ShieldCheck, FileCode } from "lucide-react";
 import { fetchImpact } from "../api/client";
 
 export const Impact: React.FC = () => {

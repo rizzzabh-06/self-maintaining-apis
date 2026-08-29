@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { 
-  GitPullRequest, 
-  ShieldCheck, 
   Boxes, 
   AlertTriangle, 
   ArrowRight, 
   CheckCircle2, 
   Sparkles, 
   Terminal,
-  RefreshCw,
   FolderGit2
 } from "lucide-react";
 import { fetchProviders, fetchRepositories, fetchChanges, fetchUsages } from "../api/client";

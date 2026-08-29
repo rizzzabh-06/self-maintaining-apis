@@ -1,5 +1,4 @@
-import React from "react";
-import { Database, ShieldCheck, GitPullRequest, Activity, Boxes, AlertTriangle } from "lucide-react";
+import { ShieldCheck, GitPullRequest, Activity, Boxes, AlertTriangle } from "lucide-react";
 
 interface NavbarProps {
   activeTab: string;

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { AlertTriangle, ArrowRight, ShieldAlert, FileCode2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, ArrowRight, ShieldAlert } from "lucide-react";
 import { fetchChanges } from "../api/client";
 
 export const Changes: React.FC = () => {
