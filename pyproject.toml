@@ -5,6 +5,9 @@ description = "Self-Maintaining API Agent — detects external API changes, gene
 requires-python = ">=3.11"
 dependencies = [
     "pyyaml>=6.0",
+    "fastapi>=0.100.0",
+    "pydantic>=2.0.0",
+    "httpx>=0.24.0",
 ]
 
 [project.optional-dependencies]

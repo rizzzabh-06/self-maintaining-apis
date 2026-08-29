@@ -13,7 +13,7 @@ Detects external API changes, finds affected code, generates bounded migrations,
 | 5. Migration Engine | ✅ Complete |
 | 6. Sandbox + Validation | ✅ Complete |
 | 7. GitHub Adapter | ✅ Complete |
-| 8. Webhook Receiver | 🔲 Next |
+| 8. Webhook Receiver & E2E Pipeline | ✅ Complete |
 
 ## Architecture
 
@@ -21,6 +21,16 @@ Detects external API changes, finds affected code, generates bounded migrations,
 API Provider → Change Engine → Repository Scanner → Impact Engine
 → Migration Engine → Docker Sandbox → Validation → GitHub Draft PR
 → Human Review → Merge
+```
+
+## Running the API & Webhooks
+
+```bash
+# Start FastAPI Control Plane
+uvicorn apps.api.app.main:app --reload --port 8000
+
+# Health check
+curl http://localhost:8000/health
 ```
 
 ## Tech Stack
