@@ -7,6 +7,16 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
+# Load .env if present
+env_file = Path(__file__).parents[4] / ".env"
+if env_file.is_file():
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            k, v = line.split("=", 1)
+            if k not in os.environ:
+                os.environ[k] = v.strip()
+
 # 1. Neon Connection Strings:
 # - DATABASE_URL: Pooled connection string (-pooler suffix) for application runtime queries
 # - DATABASE_URL_UNPOOLED: Direct connection string for DDL / migrations / session-level tasks
