@@ -44,3 +44,7 @@ node_modules/
 
 # Redis
 dump.rdb
+
+# Project Context
+context.md
+
