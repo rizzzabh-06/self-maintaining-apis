@@ -1,4 +1,4 @@
-# 🤖 Self-Maintaining API Agent
+# Self-Maintaining API Agent
 
 > **Autonomous API change detection, codebase impact analysis, bounded deterministic & Gemini LLM code migrations, isolated sandbox verification, and gated GitHub Draft PR automation.**
 
@@ -10,7 +10,7 @@
 
 ---
 
-## 📖 Overview
+## Overview
 
 External third-party APIs (Stripe, Twilio, FakePay, etc.) constantly evolve, deprecate endpoints, rename methods, and introduce breaking schema changes. Engineering teams spend countless hours manually triaging changelogs, auditing repositories, rewriting SDK calls, fixing broken types, and running tests.
 
@@ -23,35 +23,35 @@ The **Self-Maintaining API Agent** transforms this workflow into an autonomous, 
 
 ---
 
-## 🏗️ System Architecture & High-Level Design (HLD)
+## System Architecture & High-Level Design (HLD)
 
 ### 1. Autonomous Pipeline Flow
 ```mermaid
 flowchart TD
-    A["📡 Upstream Provider Release\n(Webhook / OpenAPI Spec / Changelog)"] --> B["🔍 Change Engine\n(AST Spec Diffing & Severity Classifier)"]
-    B --> C["📦 Repository Scanner\n(4-Tier AST Discovery & Symbol Indexing)"]
-    C --> D["📊 Impact Engine\n(Caller Tracing & Risk/Confidence Scoring)"]
-    D --> E{"⚙️ Migration Planner"}
-    E -->|"Deterministic Recipe"| F["📝 Code Transformer\n(Unified File Patches)"]
-    E -->|"Unseen Provider"| G["🧠 Google Gemini LLM\n(Bounded Context Patching)"]
-    F --> H["🧪 Isolated Disposable Sandbox\n(Build, Contract Check & Unit Tests)"]
+    A["Upstream Provider Release\n(Webhook / OpenAPI Spec / Changelog)"] --> B["Change Engine\n(AST Spec Diffing & Severity Classifier)"]
+    B --> C["Repository Scanner\n(4-Tier AST Discovery & Symbol Indexing)"]
+    C --> D["Impact Engine\n(Caller Tracing & Risk/Confidence Scoring)"]
+    D --> E{"Migration Planner"}
+    E -->|"Deterministic Recipe"| F["Code Transformer\n(Unified File Patches)"]
+    E -->|"Unseen Provider"| G["Google Gemini LLM\n(Bounded Context Patching)"]
+    F --> H["Isolated Disposable Sandbox\n(Build, Contract Check & Unit Tests)"]
     G --> H
     H --> I{"Validation Status"}
-    I -->|"❌ FAIL"| J["🚫 Pipeline Blocked\n(Error Logs Persisted to Neon DB)"]
-    I -->|"✅ PASS"| K["🐙 GitHub Adapter\n(Creates Branch & Opens Draft PR)"]
-    K --> L["👤 Human Engineering Review\n(Strict Safety Invariant: No Auto-Merge)"]
+    I -->|"FAIL"| J["Pipeline Blocked\n(Error Logs Persisted to Neon DB)"]
+    I -->|"PASS"| K["GitHub Adapter\n(Creates Branch & Opens Draft PR)"]
+    K --> L["Human Engineering Review\n(Strict Safety Invariant: No Auto-Merge)"]
 ```
 
 ### 2. Component & Storage Architecture
 ```mermaid
 graph TB
     subgraph Client Layer
-        WebUI["💻 React + Vite Web Dashboard\n(9-Step Wizard, Inventory, Diff Viewer)"]
+        WebUI["React + Vite Web Dashboard\n(9-Step Wizard, Inventory, Diff Viewer)"]
     end
 
     subgraph Control Plane
-        FastAPI["⚡ FastAPI API Server (Port 8000)\n(/api/inventory, /api/changes, /api/migrations)"]
-        WebhookHandler["🪝 Webhook Receiver\n(HMAC SHA-256 Verified)"]
+        FastAPI["FastAPI API Server (Port 8000)\n(/api/inventory, /api/changes, /api/migrations)"]
+        WebhookHandler["Webhook Receiver\n(HMAC SHA-256 Verified)"]
     end
 
     subgraph Intelligence & Execution Engine
@@ -63,9 +63,9 @@ graph TB
     end
 
     subgraph Data & AI Primitives
-        NeonPooled[("🐘 Neon Lakebase Postgres\n(Runtime Connection Pooling)")]
-        NeonDirect[("🐘 Neon Lakebase Postgres\n(Direct DDL / Schema Migrations)")]
-        GeminiAPI["✨ Google Gemini API\n(gemini-2.5-flash)"]
+        NeonPooled[("Neon Lakebase Postgres\n(Runtime Connection Pooling)")]
+        NeonDirect[("Neon Lakebase Postgres\n(Direct DDL / Schema Migrations)")]
+        GeminiAPI["Google Gemini API\n(gemini-2.5-flash)"]
     end
 
     WebUI -->|HTTP / REST| FastAPI
@@ -83,7 +83,7 @@ graph TB
 
 ---
 
-## 🔄 9-Step User Journey & Onboarding Workflow
+## 9-Step User Journey & Onboarding Workflow
 
 The platform features an interactive 9-step guided workflow:
 
@@ -115,7 +115,7 @@ The platform features an interactive 9-step guided workflow:
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer | Technologies | Description |
 | :--- | :--- | :--- |
@@ -129,23 +129,23 @@ The platform features an interactive 9-step guided workflow:
 
 ---
 
-## ✨ What Has Been Built
+## What Has Been Built
 
-- ✅ **Milestones 1–9 Core Engine** (88/88 automated tests passing in ~30s).
-- ✅ **Deterministic AST Diffing**: Detects endpoint renames (`/payment` → `/payments`) and schema requirement changes (`currency: required`).
-- ✅ **4-Tier Repository Scanner**: Maps package manifests, URL constants, client wrapper methods, and call sites.
-- ✅ **Impact Engine**: Computes exact file impact sets, caller chains, risk levels, and confidence scores.
-- ✅ **Deterministic Recipes & Gemini LLM Fallback**: Generates clean unified diffs across multiple files simultaneously.
-- ✅ **Isolated Disposable Sandbox**: Verifies patch application, TypeScript compilation, contract matching, and unit tests.
-- ✅ **GitHub Adapter**: Formats evidence-rich Draft PR markdown with validation logs.
-- ✅ **Neon Lakebase Postgres Integration**: Schema tables created and seeded (`organizations`, `repositories`, `providers`, `api_versions`, `api_changes`, `api_usages`, `migration_runs`, `validation_runs`, `users`, `github_installations`, `automation_settings`).
-- ✅ **FastAPI REST Control Plane**: Complete suite of endpoints under `/api/...` with CORS support.
-- ✅ **React Web Dashboard**: Interactive UI with Dashboard, Repositories, API Inventory, Changes, Impact, Migration Console, Settings, and 9-Step Onboarding Stepper.
-- ✅ **One-Click Demo Runner**: Complete autonomous simulation in a single command.
+- **Milestones 1–9 Core Engine** (88/88 automated tests passing in ~30s).
+- **Deterministic AST Diffing**: Detects endpoint renames (`/payment` → `/payments`) and schema requirement changes (`currency: required`).
+- **4-Tier Repository Scanner**: Maps package manifests, URL constants, client wrapper methods, and call sites.
+- **Impact Engine**: Computes exact file impact sets, caller chains, risk levels, and confidence scores.
+- **Deterministic Recipes & Gemini LLM Fallback**: Generates clean unified diffs across multiple files simultaneously.
+- **Isolated Disposable Sandbox**: Verifies patch application, TypeScript compilation, contract matching, and unit tests.
+- **GitHub Adapter**: Formats evidence-rich Draft PR markdown with validation logs.
+- **Neon Lakebase Postgres Integration**: Schema tables created and seeded (`organizations`, `repositories`, `providers`, `api_versions`, `api_changes`, `api_usages`, `migration_runs`, `validation_runs`, `users`, `github_installations`, `automation_settings`).
+- **FastAPI REST Control Plane**: Complete suite of endpoints under `/api/...` with CORS support.
+- **React Web Dashboard**: Interactive UI with Dashboard, Repositories, API Inventory, Changes, Impact, Migration Console, Settings, and 9-Step Onboarding Stepper.
+- **One-Click Demo Runner**: Complete autonomous simulation in a single command.
 
 ---
 
-## 🚀 Setup & Installation Instructions
+## Setup & Installation Instructions
 
 ### 1. Prerequisites
 - **Python 3.12+**
@@ -210,7 +210,7 @@ cd ../..
 
 ---
 
-## 💻 Useful Commands & Run Scripts
+## Useful Commands & Run Scripts
 
 ### A. Run the 1-Click End-to-End Demo
 Executes the complete autonomous pipeline live against Neon Postgres:
@@ -244,7 +244,7 @@ cloudflared tunnel --url http://localhost:5173
 
 ---
 
-## 🔒 Safety Invariants & Guardrails
+## Safety Invariants & Guardrails
 
 1. **Strict Draft PR Invariant**: The agent **only** opens `draft: true` pull requests. It has zero permissions to merge code or deploy autonomously.
 2. **Isolated Disposable Sandboxes**: Patches are generated and tested inside temporary worktrees. Host repositories are never modified directly.
@@ -253,5 +253,5 @@ cloudflared tunnel --url http://localhost:5173
 
 ---
 
-## 📄 License
+## License
 MIT License. Created by [Rizzabh](https://github.com/rizzzabh-06).
