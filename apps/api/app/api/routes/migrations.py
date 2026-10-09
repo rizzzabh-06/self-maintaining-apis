@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime
+import os
 from pathlib import Path
 from typing import Optional
 import yaml
@@ -18,6 +19,14 @@ router = APIRouter(prefix="/api/migrations", tags=["Migrations"])
 
 FIXTURES_DIR = Path(__file__).parents[5] / "tests" / "fixtures"
 DEMO_REPO = FIXTURES_DIR / "demo-repository"
+
+def _get_demo_repo_path() -> Path:
+    """Return demo repo path from env var or default to fixtures."""
+    env_path = os.getenv("GITHUB_DEMO_REPO_PATH", "").strip()
+    if env_path:
+        return Path(env_path).resolve()
+    return FIXTURES_DIR / "demo-repository"
+
 
 
 class TriggerMigrationRequest(BaseModel):
@@ -44,7 +53,7 @@ def trigger_migration(
     pipeline_res = run_pipeline(
         old_spec_data=v1,
         new_spec_data=v2,
-        repo_path=DEMO_REPO,
+        repo_path=_get_demo_repo_path(),
         repo_name=req.repo_name,
         provider=req.provider,
     )

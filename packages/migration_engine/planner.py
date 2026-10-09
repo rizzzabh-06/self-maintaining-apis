@@ -11,12 +11,14 @@ from packages.impact_engine.models import ImpactReport
 from .models import MigrationPlan, FilePatch
 from .recipes.base import MigrationRecipe
 from .recipes.fakepay import FakePayV1ToV2Recipe
+from .recipes.stripe import StripeChargesToPaymentIntentsRecipe
 from .llm.base import LLMProvider, StubLLMProvider
 from .llm.gemini import GeminiLLMProvider
 
 # Active recipe registry
 RECIPE_REGISTRY: list[Type[MigrationRecipe]] = [
     FakePayV1ToV2Recipe,
+    StripeChargesToPaymentIntentsRecipe,
 ]
 
 

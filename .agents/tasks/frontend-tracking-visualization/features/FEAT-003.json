@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Enhance Dashboard page with 4 new metric cards (migrations total, success rate %, avg validation time, PRs awaiting review), add 3 recharts visualizations (breaking changes line chart for last 30 days, migration success/failure pie chart, top-5-repos bar chart), add provider status grid for FakePay and Stripe with health dots, and make pipeline steps clickable with drill-down detail popover.",
+  "status": "pending",
+  "steps": [
+    "Open apps/web/src/pages/Dashboard.tsx and import the new chart components (TrendLineChart, SuccessRatePieChart, RepositoryBarChart) from ../components/",
+    "Add 4 new metric card objects to the metricCards array after the existing 4 cards: {label: 'Migrations Total', value: stats.migrationsTotal, sub: 'Last 30 days', icon: GitPullRequest, iconBg: 'rgba(168,85,247,0.15)', iconColor: '#c084fc', tab: 'migration-history'}, {label: 'Success Rate', value: stats.successRate + '%', sub: 'Validated in sandbox', icon: CheckCircle2, iconBg: 'rgba(16,185,129,0.15)', iconColor: '#34d399', tab: 'analytics'}, {label: 'Avg Validation Time', value: stats.avgValidationTime + 's', sub: 'Build + test execution', icon: Clock, iconBg: 'rgba(245,158,11,0.15)', iconColor: '#fbbf24', tab: 'analytics'}, {label: 'PRs Awaiting Review', value: stats.prsAwaiting, sub: 'Draft PRs opened', icon: Activity, iconBg: 'rgba(6,182,212,0.15)', iconColor: '#22d3ee', tab: 'migration-history'}",
+    "Update stats state to include the 4 new fields: migrationsTotal, successRate, avgValidationTime, prsAwaiting with mock values (10, 92, 18, 3 respectively) in initial state and API load function",
+    "Add new section after the main content grid: Charts section with 3 glass-panel divs in a CSS grid (2 columns on desktop, 1 on mobile). First panel: TrendLineChart with title 'Breaking Changes (Last 30 Days)' and mock data array of {date, count} objects. Second panel: SuccessRatePieChart with title 'Migration Outcomes' and data [{name: 'Success', value: 23, color: '#34d399'}, {name: 'Failed', value: 2, color: '#fb7185'}, {name: 'In Progress', value: 1, color: '#818cf8'}]. Third panel: RepositoryBarChart with title 'Top 5 Affected Repos' and mock data.",
+    "Add provider status grid section below charts: 2-column grid with glass-panel cards for FakePay and Stripe. Each card shows provider name, version, pulse-dot health indicator (green if healthy, red if down), last_checked timestamp, webhook_status badge (badge-success if connected, badge-critical if disconnected). Use mock data.",
+    "Make pipeline steps clickable: wrap each pipeline step in a button with onClick handler that shows a popover/modal overlay with step details (name, status, description, timestamp, logs excerpt). Use modal-overlay and modal-content classes from index.css. Store selectedPipelineStep in state (null when closed).",
+    "Update the load() function to fetch new metrics from API (fetchAnalytics, fetchMigrations) with .catch() fallbacks to mock data"
+  ],
+  "acceptance_criteria": [
+    "Dashboard displays 8 total metric cards (4 existing + 4 new) in responsive grid",
+    "3 charts render below the pipeline timeline with mock data",
+    "Provider status grid shows FakePay and Stripe with health indicators",
+    "Clicking a pipeline step shows a popover with step details and close button",
+    "All new sections use existing glassmorphism styles and animations (stagger, animate-fade-up)",
+    "TypeScript compiles with no errors",
+    "Page loads and renders charts even when backend is unavailable (mock data fallbacks)"
+  ],
+  "verification": [
+    "cd apps/web && npm run build - TypeScript compilation succeeds",
+    "cd apps/web && npm run dev - start dev server and navigate to Dashboard tab",
+    "Verify 8 metric cards render, 3 charts display with mock data, provider grid shows 2 providers",
+    "Click each pipeline step and verify popover appears with details and closes on button click",
+    "Test with backend unavailable - verify mock data fallbacks work and no console errors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

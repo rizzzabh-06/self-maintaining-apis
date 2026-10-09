@@ -1,0 +1,123 @@
+erDiagram
+    ORGANIZATION ||--o{ REPOSITORY : has
+    ORGANIZATION ||--o| AUTOMATION_SETTINGS : configures
+    ORGANIZATION ||--o{ GITHUB_INSTALLATION : has
+    
+    PROVIDER ||--o{ API_VERSION : releases
+    API_VERSION ||--o{ API_CHANGE : contains
+    
+    REPOSITORY ||--o{ API_USAGE : contains
+    REPOSITORY ||--o{ MIGRATION_RUN : triggers
+    
+    MIGRATION_RUN ||--o| VALIDATION_RUN : validates
+    
+    ORGANIZATION {
+        string id PK
+        string name
+        string slug
+        datetime created_at
+    }
+    
+    GITHUB_INSTALLATION {
+        string id PK
+        string organization_id FK
+        string account_login
+        string account_type
+        text access_token
+        datetime token_expires_at
+        json selected_repositories
+        datetime installed_at
+    }
+    
+    AUTOMATION_SETTINGS {
+        string id PK
+        string organization_id FK
+        boolean auto_scan_on_push
+        boolean auto_pr_on_breaking
+        float confidence_threshold
+        boolean draft_pr_only
+        datetime updated_at
+    }
+    
+    REPOSITORY {
+        string id PK
+        string organization_id FK
+        string name
+        string github_repo
+        integer github_id
+        string default_branch
+        string language
+        boolean is_monitored
+        string status
+        datetime last_scanned_at
+        datetime created_at
+    }
+    
+    PROVIDER {
+        string id PK
+        string name
+        string slug
+        string webhook_secret
+        boolean is_active
+        datetime created_at
+    }
+    
+    API_VERSION {
+        string id PK
+        string provider_id FK
+        string version
+        string spec_location
+        datetime retrieved_at
+    }
+    
+    API_CHANGE {
+        string id PK
+        string api_version_id FK
+        string change_type
+        boolean breaking
+        string endpoint
+        string old_value
+        string new_value
+        string severity
+        text description
+        json evidence
+        datetime created_at
+    }
+    
+    API_USAGE {
+        string id PK
+        string repository_id FK
+        string provider
+        string endpoint
+        string file_path
+        integer line_number
+        string symbol
+        string usage_type
+        float confidence
+        text snippet
+        datetime created_at
+    }
+    
+    MIGRATION_RUN {
+        string id PK
+        string repository_id FK
+        string provider
+        string status
+        json plan
+        float confidence
+        string risk_level
+        boolean is_deterministic
+        string pr_url
+        datetime created_at
+    }
+    
+    VALIDATION_RUN {
+        string id PK
+        string migration_id FK
+        string overall_status
+        string build_status
+        string test_status
+        string contract_status
+        json logs
+        datetime executed_at
+    }

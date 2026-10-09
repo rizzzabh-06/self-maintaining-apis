@@ -1,0 +1,143 @@
+openapi: "3.0.3"
+info:
+  title: Stripe API
+  version: "2.0.0"
+  description: A fixture Stripe API (PaymentIntents v2 state) used for testing the Self-Maintaining API Agent.
+
+servers:
+  - url: https://api.stripe.com
+
+paths:
+  /v1/payment_intents:
+    post:
+      operationId: createCharge
+      summary: Create a payment intent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentIntentRequest"
+      responses:
+        "200":
+          description: PaymentIntent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentIntent"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    PaymentIntentRequest:
+      type: object
+      required:
+        - amount
+        - currency
+        - payment_method
+        - automatic_payment_methods
+      properties:
+        amount:
+          type: integer
+          description: Amount in smallest currency unit (e.g. cents).
+          example: 5000
+        currency:
+          type: string
+          description: ISO 4217 currency code.
+          example: "usd"
+        payment_method:
+          type: string
+          description: ID of the PaymentMethod to attach to this PaymentIntent.
+          example: "pm_card_visa"
+        automatic_payment_methods:
+          type: object
+          description: Settings to automatically detect compatible payment methods.
+          properties:
+            enabled:
+              type: boolean
+              description: Whether to automatically detect compatible payment methods.
+              example: true
+        description:
+          type: string
+          description: Arbitrary description for the payment intent.
+          example: "Order #1234"
+
+    # ChargeRequest evolved — retains the v1 name so diff_specs() can detect the new
+    # required fields (payment_method, automatic_payment_methods) via schema-name matching.
+    ChargeRequest:
+      type: object
+      required:
+        - amount
+        - currency
+        - payment_method
+        - automatic_payment_methods
+      properties:
+        amount:
+          type: integer
+          description: Amount in smallest currency unit (e.g. cents).
+          example: 5000
+        currency:
+          type: string
+          description: ISO 4217 currency code.
+          example: "usd"
+        payment_method:
+          type: string
+          description: ID of the PaymentMethod to attach to this PaymentIntent.
+          example: "pm_card_visa"
+        automatic_payment_methods:
+          type: object
+          description: Settings to automatically detect compatible payment methods.
+          properties:
+            enabled:
+              type: boolean
+              description: Whether to automatically detect compatible payment methods.
+              example: true
+        description:
+          type: string
+          description: Arbitrary description for the payment intent.
+          example: "Order #1234"
+
+    PaymentIntent:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "pi_abc123"
+        status:
+          type: string
+          enum: [requires_payment_method, requires_confirmation, requires_action, processing, requires_capture, canceled, succeeded]
+          example: "succeeded"
+        amount:
+          type: integer
+          example: 5000
+        currency:
+          type: string
+          example: "usd"
+        payment_method:
+          type: string
+          example: "pm_card_visa"
+        description:
+          type: string
+          example: "Order #1234"
+        created:
+          type: integer
+          description: Unix timestamp of payment intent creation.
+          example: 1736939400
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            type:
+              type: string
+              example: "invalid_request_error"
+            message:
+              type: string
+              example: "payment_method is required"

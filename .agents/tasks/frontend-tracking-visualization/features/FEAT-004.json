@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Create 4 new pages (MigrationHistory, Analytics, ValidationDetails, ProviderDashboard) with full routing wired through App.tsx and Navbar.tsx. Each page follows existing patterns from Dashboard/Migration pages: polling with useEffect, glass-panel layouts, stagger animations, graceful mock data fallbacks.",
+  "status": "pending",
+  "steps": [
+    "Create apps/web/src/pages/MigrationHistory.tsx - searchable/filterable table of all migrations. Props: none. State: filters (provider, status, dateRange), sortColumn, sortDirection, expandedRowId. Fetch data with fetchMigrationHistory(filters) in useEffect with 30s polling. Display data-table with columns: timestamp, provider (badge), repo name, status (badge), confidence (ConfidenceGauge mini), PR link (external link icon). Row click expands to show MigrationCard with full details. Add CSV export button using Blob download pattern: const csv = rows.map(r => Object.values(r).join(',')).join('\\n'); const blob = new Blob([csv], {type: 'text/csv'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'migrations.csv'; a.click(); URL.revokeObjectURL(url);",
+    "Create apps/web/src/pages/Analytics.tsx - multiple recharts sections with trend analysis and time-series. Props: onNavigate for drill-down links. State: timeRange (7d/30d/90d selector), analyticsData. Fetch with fetchAnalytics() and poll every 30s. Sections: (1) Breaking Changes Trend - TrendLineChart with 30-day data, (2) Migration Success Rate - SuccessRatePieChart, (3) Top Providers by Changes - RepositoryBarChart variant for providers, (4) Validation Time Distribution - another LineChart for avg validation time over time, (5) Repository Activity Heatmap - simple grid showing repos × time periods with color intensity based on activity level. All sections in glass-panel cards with section-eyebrow headers.",
+    "Create apps/web/src/pages/ValidationDetails.tsx - full build logs with diff syntax highlighting, test pass/fail breakdown, link to GitHub PR. Props: validationId (string, optional - if provided, load that specific validation; if not, show most recent). State: validation data, selectedLogSection. Fetch with fetchValidationDetails(validationId) on mount and every 30s. Display ValidationResults component for structured test output. Show diff-container for code changes with diff-line-* classes. Terminal-style log viewer (similar to Migration page terminal) for raw build output. Link to GitHub PR with ExternalLink icon and btn-primary. Handle null validationId by showing list of recent validations to select from.",
+    "Create apps/web/src/pages/ProviderDashboard.tsx - multi-provider grid, spec version timelines, breaking change history, webhook status. Props: none. State: providers, selectedProvider. Fetch with fetchProviderStatus() and poll every 30s. Top section: grid of provider cards (glass-panel-interactive) showing name, current version, health pulse-dot, last spec update timestamp, webhook status badge, total breaking changes count. Click a provider to show detail panel below: spec version timeline (vertical timeline showing version history with dates and breaking change counts), breaking change history table (date, change type, severity badge, affected endpoints count), webhook configuration section (webhook URL, HMAC secret status, last delivery timestamp, delivery success rate). Use pipeline-timeline styles for version timeline.",
+    "Update apps/web/src/App.tsx: import the 4 new pages at top. Add routing cases in the main element after existing cases: {activeTab === 'analytics' && <Analytics onNavigate={setActiveTab} />}, {activeTab === 'migration-history' && <MigrationHistory />}, {activeTab === 'validation-details' && <ValidationDetails />}, {activeTab === 'providers' && <ProviderDashboard />}",
+    "Update apps/web/src/components/Navbar.tsx: add 4 new tab objects to the tabs array after 'settings': {id: 'analytics', label: 'Analytics', icon: TrendingUp, shortcut: '9'}, {id: 'migration-history', label: 'Migration History', icon: Clock, shortcut: '0'}, {id: 'providers', label: 'Providers', icon: Boxes, shortcut: 'A'}, {id: 'validation-details', label: 'Validation', icon: CheckCircle2, shortcut: 'V'}. Import TrendingUp icon from lucide-react.",
+    "Update keyboard shortcuts handler in Navbar.tsx to support new shortcuts: handle keys '9', '0', and letters 'a'/'A', 'v'/'V' in the existing keydown listener"
+  ],
+  "acceptance_criteria": [
+    "4 new page files created in apps/web/src/pages/ with full TypeScript types",
+    "Each page follows existing patterns: polling useEffect, glass-panel layouts, mock data fallbacks",
+    "MigrationHistory page displays searchable table with CSV export button that works",
+    "Analytics page shows 5 distinct chart sections with recharts components",
+    "ValidationDetails page shows validation results, diff viewer, and PR link",
+    "ProviderDashboard page shows provider grid and detail panel on selection",
+    "App.tsx imports and routes to all 4 new pages based on activeTab",
+    "Navbar.tsx shows 4 new tabs with keyboard shortcuts (⌘9, ⌘0, ⌘A, ⌘V)",
+    "Clicking new tabs navigates to the correct page",
+    "All pages compile with TypeScript and render without errors"
+  ],
+  "verification": [
+    "cd apps/web && npm run build - TypeScript compilation succeeds with no errors",
+    "cd apps/web && npm run dev - start dev server on localhost:5173",
+    "Click each new navbar tab (Analytics, Migration History, Providers, Validation) and verify page loads",
+    "Test keyboard shortcuts ⌘9, ⌘0, ⌘A, ⌘V navigate to correct pages",
+    "Test CSV export button in MigrationHistory downloads a CSV file",
+    "Test provider selection in ProviderDashboard shows detail panel",
+    "Test all pages with backend unavailable - verify mock data renders and no console errors",
+    "Test mobile responsive layout - verify cards wrap and charts resize"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

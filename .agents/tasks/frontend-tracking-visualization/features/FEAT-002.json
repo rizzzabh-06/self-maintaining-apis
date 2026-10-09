@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Extend API client (apps/web/src/api/client.ts) with 4 new functions for analytics, migration history with filters, validation details, and provider status enrichment. All functions follow existing pattern of returning raw fetch().json() with no built-in error handling (callers handle errors).",
+  "status": "pending",
+  "steps": [
+    "Add fetchAnalytics() function to apps/web/src/api/client.ts - GET /api/analytics - returns analytics summary with time-series data for charts. No parameters. Follow existing pattern: const res = await fetch(`${API_BASE}/api/analytics`); return res.json();",
+    "Add fetchMigrationHistory(filters?: {provider?: string, status?: string, startDate?: string, endDate?: string}) function - GET /api/migrations with query params. Build query string from filters object if provided. Example: /api/migrations?provider=fakepay&status=completed",
+    "Add fetchValidationDetails(id: string) function - alias/wrapper for existing fetchValidation(migrationId) to maintain semantic clarity for ValidationDetails page usage. Can just call and return fetchValidation(id) or duplicate the implementation.",
+    "Add fetchProviderStatus() function - GET /api/inventory/providers with status enrichment. Returns array of providers with health indicators, last_checked timestamp, webhook_status. Follow existing pattern.",
+    "Export all 4 new functions at end of client.ts file"
+  ],
+  "acceptance_criteria": [
+    "4 new functions added to apps/web/src/api/client.ts with TypeScript types inferred from usage",
+    "fetchMigrationHistory correctly builds query params from filters object",
+    "All functions follow existing pattern: async function, fetch with API_BASE, return res.json()",
+    "No error handling in client functions (consistent with existing pattern)",
+    "TypeScript compilation succeeds"
+  ],
+  "verification": [
+    "cd apps/web && npm run build - TypeScript compilation succeeds",
+    "Manually test API calls in browser console after starting backend and frontend: fetch('http://localhost:8000/api/analytics').then(r => r.json()).then(console.log)",
+    "Verify query params built correctly for fetchMigrationHistory with test filters"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

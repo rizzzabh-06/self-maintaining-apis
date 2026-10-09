@@ -1,0 +1,54 @@
+flowchart TD
+    Start([Migration Requested]) --> FetchChanges[Fetch Breaking Changes]
+    FetchChanges --> FetchImpact[Fetch Impact Analysis]
+    FetchImpact --> Planner{Migration Planner}
+    
+    Planner --> Loop[Iterate Recipe Registry]
+    Loop --> CheckRecipe{Recipe.can_handle<br/>changes, provider?}
+    
+    CheckRecipe -->|Yes - Match Found| Deterministic[Deterministic Recipe<br/>Selected]
+    CheckRecipe -->|No - Continue| Loop
+    CheckRecipe -->|No Recipes Match| LLMFallback[LLM Fallback<br/>Gemini Assistant]
+    
+    Deterministic --> FakePay{Provider?}
+    FakePay -->|fakepay| FakePayRecipe[FakePayV1ToV2Recipe<br/>- Update endpoints<br/>- Add currency field<br/>- Fix tests]
+    FakePay -->|stripe| StripeRecipe[StripeChargesToPaymentIntents<br/>- Charges → Payment Intents<br/>- Add payment_method<br/>- Update types]
+    FakePay -->|other| CustomRecipe[Custom Recipe<br/>Provider-specific logic]
+    
+    FakePayRecipe --> ApplyRecipe[Apply Recipe]
+    StripeRecipe --> ApplyRecipe
+    CustomRecipe --> ApplyRecipe
+    
+    LLMFallback --> GeneratePrompt[Generate Context Prompt<br/>- Changes<br/>- Usages<br/>- File contents]
+    GeneratePrompt --> CallLLM[Call Gemini API<br/>Request migration patches]
+    CallLLM --> ParseResponse[Parse LLM Response<br/>Extract patches]
+    ParseResponse --> ApplyRecipe
+    
+    ApplyRecipe --> GeneratePatches[Generate File Patches]
+    GeneratePatches --> PatchClient[Patch: API Client<br/>Update endpoints & methods]
+    GeneratePatches --> PatchTypes[Patch: Type Definitions<br/>Add/remove fields]
+    GeneratePatches --> PatchRoutes[Patch: Application Routes<br/>Update function calls]
+    GeneratePatches --> PatchTests[Patch: Unit Tests<br/>Fix assertions]
+    
+    PatchClient --> CreatePlan[Create Migration Plan]
+    PatchTypes --> CreatePlan
+    PatchRoutes --> CreatePlan
+    PatchTests --> CreatePlan
+    
+    CreatePlan --> SetConfidence{Calculate Confidence}
+    SetConfidence -->|Deterministic| HighConf[Confidence: 95-99%<br/>is_deterministic: true]
+    SetConfidence -->|LLM-based| MedConf[Confidence: 70-85%<br/>is_deterministic: false]
+    
+    HighConf --> ReturnPlan[Return Migration Plan]
+    MedConf --> ReturnPlan
+    
+    ReturnPlan --> End([Plan Ready for Validation])
+    
+    style Start fill:#818cf8,stroke:#6366f1,stroke-width:2px,color:#fff
+    style End fill:#34d399,stroke:#10b981,stroke-width:2px,color:#fff
+    style Deterministic fill:#34d399,stroke:#10b981,stroke-width:2px
+    style LLMFallback fill:#fbbf24,stroke:#f59e0b,stroke-width:2px
+    style FakePayRecipe fill:#22d3ee,stroke:#06b6d4,stroke-width:2px
+    style StripeRecipe fill:#22d3ee,stroke:#06b6d4,stroke-width:2px
+    style HighConf fill:#34d399,stroke:#10b981,stroke-width:2px
+    style MedConf fill:#fbbf24,stroke:#f59e0b,stroke-width:2px

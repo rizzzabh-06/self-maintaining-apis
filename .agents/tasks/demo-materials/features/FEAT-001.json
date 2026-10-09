@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Demo data seeder with realistic volume (3 orgs, 8 repos, 2 providers with version history, 40+ API usages, 6 migration runs with full validation records, 12 API changes). Seeder respects existing records and is idempotent.",
+  "status": "pending",
+  "steps": [
+    "Read apps/api/app/models/db_models.py to extract exact table schemas: User (id, email, name, avatar_url, github_id, created_at), Organization (id, name, slug, created_at), GitHubAppInstallation (id, organization_id, account_login, account_type, access_token, token_expires_at, selected_repositories, installed_at), AutomationSettings (id, organization_id, auto_scan_on_push, auto_pr_on_breaking, confidence_threshold, draft_pr_only, updated_at), Repository (id, organization_id, name, github_repo, github_id, default_branch, language, is_monitored, status, last_scanned_at, created_at), Provider (id, name, slug, webhook_secret, is_active, created_at), APIVersion (id, provider_id, version, spec_location, retrieved_at), APIChangeModel (id, api_version_id, change_type, breaking, endpoint, old_value, new_value, severity, description, evidence, created_at), APIUsageModel (id, repository_id, provider, endpoint, file_path, line_number, symbol, usage_type, confidence, snippet, created_at), MigrationRun (id, repository_id, provider, status, plan, confidence, risk_level, is_deterministic, pr_url, created_at), ValidationRun (id, migration_id, overall_status, build_status, test_status, contract_status, logs, executed_at).",
+    "Create scripts/seed_realistic_demo.py. Import get_db from apps.api.app.db.session and all models from apps.api.app.models.db_models. Use datetime.datetime.now(datetime.timezone.utc) for timestamps. Create a main() function that gets a db session and seeds: 3 organizations ('Acme Corp' slug acme-corp, 'TechStart Inc' slug techstart-inc, 'Global Payments' slug global-payments), 8 repositories spread across orgs (demo-checkout, payments-worker, billing-service under acme-corp; stripe-integration, fakepay-client under techstart-inc; payment-gateway, checkout-api, subscription-service under global-payments). Realistic languages: 6 TypeScript, 1 Python, 1 Go. All repos have is_monitored=True, status='ready', last_scanned_at within last 7 days.",
+    "Seed 2 providers: FakePay (slug fakepay, webhook_secret from env or 'demo_secret_fakepay', is_active=True) and Stripe (slug stripe, webhook_secret from env or 'demo_secret_stripe', is_active=True). For each provider, create 2 APIVersion records: v1.0.0 and v2.0.0 with spec_location pointing to tests/fixtures/api-v1/{provider}.yaml and tests/fixtures/api-v2/{provider}.yaml, retrieved_at spread over last 30 days.",
+    "Seed 12 APIChangeModel records split between FakePay and Stripe API versions. Use realistic change_type values from packages/change_engine/models.py (ENDPOINT_RENAMED, FIELD_REQUIRED, FIELD_REMOVED, PARAM_TYPE_CHANGED). 8 breaking=True, 4 breaking=False. Severity: 4 critical, 5 high, 3 medium. Include endpoint paths, old_value/new_value strings, description with technical details, evidence JSON with {'path': '...', 'method': '...', 'field': '...'}.",
+    "Seed 40+ APIUsageModel records across all 8 repositories. Provider split: 25 fakepay, 18 stripe. usage_type values from packages/repository_analyzer/models.py: SDK_IMPORT, BASE_URL, CLIENT_METHOD, ENDPOINT_CALL. file_path examples: src/lib/fakepay-client.ts, src/services/stripe.ts, lib/payments.py, pkg/checkout/handler.go. line_number between 10-250. symbol examples: createPayment, StripeClient, POST_/v1/charges. confidence between 0.85-1.0. snippet: realistic 1-2 line code strings (e.g., 'const payment = await fakepay.createPayment({', 'response = stripe_client.charges.create(').",
+    "Seed 6 MigrationRun records across 3 different repositories (2 per repo showing progression). provider alternates between fakepay and stripe. status values: 2 'passed', 2 'validating', 1 'failed', 1 'pr_created'. confidence between 0.92-0.99 for passed/pr_created, lower for failed. risk_level: 3 high, 2 medium, 1 low. is_deterministic: 4 True, 2 False. pr_url for pr_created status: 'https://github.com/{org}/{repo}/pull/{num}'. plan JSON with keys: recipe_name, steps (list of strings), file_patches (list of {file_path, patch_content}), summary. created_at spread over last 14 days.",
+    "Seed 6 ValidationRun records matching each MigrationRun (1:1 via migration_id FK). overall_status matches parent migration: PASS for passed/pr_created, FAIL for failed, RUNNING for validating. build_status, test_status, contract_status: individual statuses (PASS/FAIL/RUNNING). logs JSON with keys: build_output (string), test_output (string), contract_checks (list), sandbox_path (string), duration_seconds (number). executed_at matches or is 1-2 minutes after parent migration created_at.",
+    "Seed 3 User records (usr_demo_admin 'Rizzabh Admin' admin@example.com, usr_demo_dev 'Dev User' dev@example.com, usr_demo_viewer 'Viewer' viewer@example.com). Seed 3 GitHubAppInstallation records (one per org, account_login matching org name, account_type='Organization', access_token='ghp_demo_token_{org}', selected_repositories as JSON list). Seed 3 AutomationSettings records (one per org, auto_scan_on_push=True, auto_pr_on_breaking=True for 2 orgs and False for 1, confidence_threshold 0.90/0.85/0.95, draft_pr_only=True for all).",
+    "Wrap all inserts in try/except to skip records if unique constraints fail (idempotency). Print summary: 'Seeded X organizations, Y repositories, Z providers, A API versions, B changes, C usages, D migrations, E validations, F users.' Add if __name__ == '__main__': main() block. Document at top of file: Usage: python3 -m scripts.seed_realistic_demo (requires DATABASE_URL in .env)."
+  ],
+  "acceptance_criteria": [
+    "Running python3 -m scripts.seed_realistic_demo successfully inserts all records into Neon Postgres with zero errors",
+    "Re-running the seeder is idempotent and skips existing records gracefully",
+    "Querying SELECT COUNT(*) FROM repositories returns at least 8",
+    "Querying SELECT COUNT(*) FROM api_usages returns at least 40",
+    "Querying SELECT COUNT(*) FROM migration_runs returns exactly 6 with varied statuses",
+    "All foreign key relationships are valid (no orphaned records)",
+    "GET /api/repositories endpoint returns 8 repositories with realistic metadata",
+    "GET /api/inventory/usages endpoint returns 40+ usage records",
+    "GET /api/migrations endpoint returns 6 migration runs with validation data"
+  ],
+  "verification": [
+    "python3 -m scripts.seed_realistic_demo runs without errors and prints success summary",
+    "psql $DATABASE_URL -c 'SELECT COUNT(*) FROM repositories;' returns >= 8",
+    "psql $DATABASE_URL -c 'SELECT COUNT(*) FROM api_usages;' returns >= 40",
+    "psql $DATABASE_URL -c 'SELECT COUNT(*) FROM migration_runs;' returns 6",
+    "curl http://localhost:8000/api/repositories | jq 'length' returns 8 after starting backend",
+    "pytest tests/ -v passes all existing tests without regression"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

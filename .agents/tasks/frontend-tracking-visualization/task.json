@@ -1,0 +1,12 @@
+{
+  "task_id": "task-frontend-tracking-visualization",
+  "task_description": "Build comprehensive frontend tracking and visualization features for the Self-Maintaining APIs system, including enhanced dashboard with charts, new analytics/history/validation/provider pages, reusable chart components, and API client extensions",
+  "status": "pending",
+  "feature_order": [
+    "FEAT-001",
+    "FEAT-002",
+    "FEAT-003",
+    "FEAT-004"
+  ],
+  "blocked_reason": null
+}

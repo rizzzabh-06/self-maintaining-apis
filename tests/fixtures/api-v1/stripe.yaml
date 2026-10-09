@@ -1,0 +1,99 @@
+openapi: "3.0.3"
+info:
+  title: Stripe API
+  version: "1.0.0"
+  description: A fixture Stripe API (Charges legacy/v1 state) used for testing the Self-Maintaining API Agent.
+
+servers:
+  - url: https://api.stripe.com
+
+paths:
+  /v1/charges:
+    post:
+      operationId: createCharge
+      summary: Create a charge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChargeRequest"
+      responses:
+        "200":
+          description: Charge created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Charge"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    ChargeRequest:
+      type: object
+      required:
+        - amount
+        - currency
+        - source
+      properties:
+        amount:
+          type: integer
+          description: Amount in smallest currency unit (e.g. cents).
+          example: 5000
+        currency:
+          type: string
+          description: ISO 4217 currency code.
+          example: "usd"
+        source:
+          type: string
+          description: Payment source token.
+          example: "tok_visa"
+        description:
+          type: string
+          description: Arbitrary description for the charge.
+          example: "Order #1234"
+
+    Charge:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "ch_abc123"
+        status:
+          type: string
+          enum: [succeeded, pending, failed]
+          example: "succeeded"
+        amount:
+          type: integer
+          example: 5000
+        currency:
+          type: string
+          example: "usd"
+        source:
+          type: string
+          example: "tok_visa"
+        description:
+          type: string
+          example: "Order #1234"
+        created:
+          type: integer
+          description: Unix timestamp of charge creation.
+          example: 1736939400
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            type:
+              type: string
+              example: "invalid_request_error"
+            message:
+              type: string
+              example: "amount is required"

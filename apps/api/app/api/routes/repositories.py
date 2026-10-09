@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime
+import os
 from pathlib import Path
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -17,6 +18,14 @@ router = APIRouter(prefix="/api/repositories", tags=["Repositories"])
 
 FIXTURES_DIR = Path(__file__).parents[5] / "tests" / "fixtures"
 DEMO_REPO = FIXTURES_DIR / "demo-repository"
+
+def _get_demo_repo_path() -> Path:
+    """Return demo repo path from env var or default to fixtures."""
+    env_path = os.getenv("GITHUB_DEMO_REPO_PATH", "").strip()
+    if env_path:
+        return Path(env_path).resolve()
+    return FIXTURES_DIR / "demo-repository"
+
 
 
 class ConnectRepoRequest(BaseModel):
@@ -63,6 +72,16 @@ def list_github_repositories(db: Session = Depends(get_db)):
             "is_private": False,
             "description": "Recurring subscription billing engine with Stripe & FakePay connectors.",
             "is_connected": "demo-org/billing-service" in connected_repos,
+        },
+        {
+            "github_id": 104,
+            "full_name": "rizzzabh-06/fakepay-nextjs-demo",
+            "name": "fakepay-nextjs-demo",
+            "default_branch": "main",
+            "language": "TypeScript",
+            "is_private": False,
+            "description": "Pre-migration Next.js checkout service (FakePay + Stripe) — demo target for the Self-Maintaining API Agent.",
+            "is_connected": "rizzzabh-06/fakepay-nextjs-demo" in connected_repos,
         },
     ]
 
@@ -141,7 +160,7 @@ def trigger_repository_scan(
     db.commit()
 
     # Perform AST scanning
-    scan_res = scan_repository(DEMO_REPO)
+    scan_res = scan_repository(_get_demo_repo_path())
 
     # Clear prior usages and persist newly discovered usages
     db.query(APIUsageModel).filter(APIUsageModel.repository_id == repo.id).delete()

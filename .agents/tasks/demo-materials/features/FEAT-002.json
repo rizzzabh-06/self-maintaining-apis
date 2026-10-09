@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Interactive landing/marketing page as new frontend route showcasing product value proposition, pipeline visualization, key features, live demo CTA, and integration with existing dashboard. Independent from existing dashboard pages but shares styling.",
+  "status": "pending",
+  "steps": [
+    "Create apps/web/src/pages/Landing.tsx as new page component. Import lucide-react icons: Sparkles, Shield, Zap, GitPullRequest, Terminal, Boxes, TrendingUp, ArrowRight, CheckCircle2, ExternalLink. Use existing CSS custom properties from apps/web/src/App.css and index.css. Do NOT create new CSS files.",
+    "Build hero section with gradient background matching Dashboard.tsx pattern (linear-gradient with rgba indigo/cyan hues, decorative blob elements with radial-gradient). Headline: 'Self-Maintaining APIs. Zero Manual Migrations.' Subheadline: 'Autonomous change detection, bounded code generation, sandbox validation, and gated Draft PRs. Built for engineering teams.' Two CTAs: 'Launch Live Demo' (primary button navigating to dashboard) and 'View GitHub' (secondary button linking to https://github.com/rizzzabh-06/self-maintaining-apis).",
+    "Add 'How It Works' section with 7-step visual pipeline matching PIPELINE_STEPS from Dashboard.tsx. Use horizontal scroll container with glass-panel cards for each step. Include step icons, titles, and 1-sentence descriptions. Steps: 1) Provider Webhook (Zap icon, 'FakePay releases v2.0.0'), 2) Change Engine (Terminal, 'AST-based OpenAPI diff'), 3) Repo Scanner (Boxes, '4-tier TypeScript discovery'), 4) Impact Analysis (TrendingUp, 'Trace affected call sites'), 5) Migration Planner (GitPullRequest, 'Deterministic recipe or LLM'), 6) Sandbox Validation (Shield, 'Isolated build & tests'), 7) Draft PR (CheckCircle2, 'Human-gated review').",
+    "Add 'Key Features' section with 4 feature cards in 2x2 grid. Each card: glass-panel style, icon, title, 2-sentence description. Features: 1) 'Deterministic First' (Zap icon, 'AST-verified string replacement recipes. Gemini LLM only for unseen patterns.'), 2) 'Strict Safety' (Shield icon, 'Draft PR invariant. Zero auto-merge. Isolated sandbox validation.'), 3) 'Deep Discovery' (Terminal icon, '4-tier scanner: package.json, base URLs, client methods, call sites.'), 4) 'Production Ready' (CheckCircle2 icon, 'Neon Postgres. 88 passing tests. TypeScript + Python.').",
+    "Add 'Tech Stack' section with badge-style pills in horizontal flex wrap. Include badges for: Python 3.12, FastAPI, Neon Postgres, SQLAlchemy 2.0, Google Gemini 2.5, React 19, Vite, TypeScript, Tree-sitter AST, Pytest, Vitest. Use existing badge CSS classes from Dashboard (badge, badge-ts, badge-py, badge-success, etc.). Match styling to metric cards in Dashboard.",
+    "Add 'Live Demo' CTA section near bottom. Large centered card with purple/indigo gradient background. Text: 'Ready to see it in action?' Button: 'Launch Interactive Demo' navigating to dashboard tab. Secondary button: 'Watch Video Walkthrough' (links to #video placeholder for FEAT-003).",
+    "Add footer section matching existing App.tsx footer: dark background, border-top, centered text. Include: 'Self-Maintaining API Agent • Neon Postgres • Gemini LLM • Strict Draft PR Invariant'. Link to GitHub repo. Connection status indicator matching App.tsx pattern (green dot if backend is reachable).",
+    "Integrate Landing page into App.tsx: Add Landing import, add landing state case in activeTab switch, add 'Home' navigation item to Navbar.tsx (new prop: showHomeLink). Default activeTab to 'landing' for first-time visitors, 'dashboard' for returning (use localStorage flag). Add transition animation (fade-in) when switching to landing.",
+    "Update apps/web/src/components/Navbar.tsx to include optional 'Home' link at far left when showHomeLink prop is true. Link text: 'Home' with house icon from lucide-react. Active state styling matches other nav items. Only show if not already on landing page."
+  ],
+  "acceptance_criteria": [
+    "Navigating to http://localhost:5173 displays the landing page by default on first visit",
+    "Hero section displays headline, subheadline, and two functional CTA buttons",
+    "How It Works pipeline section renders all 7 steps with icons and descriptions in scrollable container",
+    "Key Features grid displays all 4 feature cards with glass-panel styling",
+    "Tech Stack badges render in flex wrap and match existing Dashboard badge styles",
+    "Clicking 'Launch Live Demo' navigates to the dashboard tab and hides landing page",
+    "Clicking 'View GitHub' opens https://github.com/rizzzabh-06/self-maintaining-apis in new tab",
+    "Landing page styling is consistent with Dashboard: same color palette, glass-panel effects, animations",
+    "Footer connection indicator correctly shows green dot when backend at :8000 is reachable",
+    "Navbar 'Home' link appears and correctly navigates back to landing page"
+  ],
+  "verification": [
+    "npm run dev in apps/web/, navigate to http://localhost:5173, landing page renders without console errors",
+    "Click 'Launch Live Demo' button, URL does not change but dashboard content replaces landing",
+    "Click Navbar 'Home' link, landing page reappears",
+    "Click 'View GitHub' button, new tab opens to correct GitHub URL",
+    "Inspect element on hero section, verify linear-gradient background CSS is applied",
+    "Resize browser to mobile width, verify pipeline steps remain horizontally scrollable",
+    "Backend running on :8000, verify footer green dot is visible and pulsing"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,42 @@
+{
+  "id": "FEAT-004",
+  "type": "chore",
+  "description": "Deployment and demo infrastructure: Vercel/Netlify frontend deployment config, Railway/Render backend deployment guide, environment variable templates, demo checklist, and troubleshooting runbook.",
+  "status": "pending",
+  "steps": [
+    "Create vercel.json in apps/web/ for Vercel deployment. Config: framework: 'vite', buildCommand: 'npm run build', outputDirectory: 'dist', env variables: VITE_API_URL (production backend URL). Add rewrites for SPA routing (all routes to index.html except /assets/). Add headers for CORS if needed. Reference: Vercel Vite docs.",
+    "Create netlify.toml in apps/web/ as alternative to Vercel. Config: [build] command='npm run build', publish='dist', [build.environment] NODE_VERSION='18', [[redirects]] from='/*' to='/index.html' status=200. Add _headers file in apps/web/public/ with CORS headers if backend is on different domain.",
+    "Create docs/deployment-backend.md with step-by-step backend deployment guide. Sections: 1) Railway Deployment (connect GitHub repo, set root directory to 'apps/api', add Procfile: 'web: uvicorn apps.api.app.main:app --host 0.0.0.0 --port $PORT', configure env vars in Railway dashboard: DATABASE_URL, GEMINI_API_KEY, etc., deploy and note the public URL), 2) Render Deployment (create new Web Service, connect repo, build command: 'pip install -e .', start command: 'uvicorn apps.api.app.main:app --host 0.0.0.0 --port $PORT', env vars same as Railway), 3) Database Setup (Neon project already exists, copy connection strings from Neon console, set DATABASE_URL and DATABASE_URL_UNPOOLED in deployment platform), 4) Post-Deployment (run init_db remotely: railway run python3 -m apps.api.app.db.init_db, run seeder: railway run python3 -m scripts.seed_realistic_demo, verify /health endpoint returns 200).",
+    "Create docs/deployment-frontend.md with frontend deployment guide. Sections: 1) Prerequisites (backend deployed and public URL obtained), 2) Configure API URL (in Vercel dashboard or netlify.toml, set VITE_API_URL to backend public URL), 3) Deploy to Vercel (vercel --prod from apps/web/, or connect GitHub repo in Vercel dashboard, set root directory to 'apps/web'), 4) Deploy to Netlify (netlify deploy --prod from apps/web/, or connect GitHub in Netlify dashboard), 5) Verify (open deployed frontend URL, check Dashboard loads, open browser DevTools Network tab, verify API calls hit production backend URL), 6) Custom Domain (optional: configure custom domain in Vercel/Netlify, update DNS CNAME records).",
+    "Create .env.example in repository root with all required environment variables. Format: KEY=description_or_example_value. Variables: DATABASE_URL (Neon pooled connection string), DATABASE_URL_UNPOOLED (Neon direct connection), GEMINI_API_KEY (Google AI Studio API key), GOOGLE_API_KEY (alias for Gemini), LLM_PROVIDER (gemini), GEMINI_MODEL (gemini-2.5-flash), FAKEPAY_API_KEY (demo key), FAKEPAY_WEBHOOK_SECRET (HMAC secret), GITHUB_APP_ID (optional), GITHUB_CLIENT_ID (optional), GITHUB_CLIENT_SECRET (optional), GITHUB_WEBHOOK_SECRET (optional), GITHUB_PRIVATE_KEY_PATH (optional), GITHUB_DEMO_REPO_PATH (optional local path). Add comment header: '# Environment Configuration for Self-Maintaining API Agent. Copy to .env and fill in your values. Never commit .env to version control.'",
+    "Create apps/web/.env.example for frontend env vars. Variables: VITE_API_URL (Backend API base URL, e.g., http://localhost:8000 for local or https://your-backend.railway.app for production). Add comment: '# Frontend environment variables. Copy to .env.local for local dev or configure in Vercel/Netlify for production.'",
+    "Create docs/demo-checklist.md as pre-demo verification checklist. Sections: 1) Pre-Demo (24 hours before): [x] Backend deployed and /health returns 200, [x] Frontend deployed and Dashboard loads, [x] Database seeded with realistic data (verify with psql queries), [x] Tunnel setup tested (cloudflared running, public URLs accessible), [x] Video walkthrough recorded and uploaded to Loom/YouTube, [x] Pitch deck reviewed and rehearsed. 2) Pre-Demo (1 hour before): [x] Backend restarted to clear any stale state, [x] Frontend cache cleared (hard refresh), [x] Demo script printed or open in second monitor, [x] Browser DevTools open to Network tab, [x] Terminal windows arranged (backend logs, frontend logs, psql client), [x] GitHub repo open to demo-checkout for PR view. 3) During Demo: [x] Start with landing page, explain value prop, [x] Navigate through each tab in order (Repositories → Inventory → Changes → Migration), [x] Trigger migration live, watch sandbox execute, [x] Show diff viewer and Draft PR, [x] Emphasize safety: Draft PR only, human review required. 4) Post-Demo: [x] Share links (GitHub repo, deployed frontend, video walkthrough), [x] Answer questions (prepare FAQs: How does Gemini LLM work? What if tests fail? Multi-language support?), [x] Follow up with pitch deck PDF via email.",
+    "Create docs/troubleshooting.md as common issues runbook. Sections: 1) Backend won't start: Check DATABASE_URL is set, check Neon Postgres is online (neon.tech status), check port 8000 not in use, check Python version >=3.12, check dependencies installed (pip list | grep fastapi). 2) Frontend won't load Dashboard: Check VITE_API_URL is set correctly, check backend is reachable (curl $VITE_API_URL/health), check CORS headers in FastAPI (should allow all origins), check browser console for errors. 3) Seeder fails: Check database is empty or idempotent flag, check foreign key constraints (seed organizations first), check datetime imports use timezone.utc. 4) Migration pipeline fails: Check demo-repository fixture exists, check GITHUB_DEMO_REPO_PATH if overridden, check Gemini API key is valid (test with curl), check sandbox has write permissions. 5) Tunnel drops: Restart cloudflared, check network stability, use --protocol http2, check free tier rate limits. 6) Tests fail: Run pytest with -v for verbose output, check fixtures are not modified, check DATABASE_URL points to test database not production, run pip install -e '.[dev]' to refresh dependencies."
+  ],
+  "acceptance_criteria": [
+    "vercel.json exists in apps/web/ with valid Vite framework config and SPA rewrites",
+    "netlify.toml exists in apps/web/ with valid build command and redirect rules",
+    "docs/deployment-backend.md exists with Railway and Render deployment steps, database setup, and post-deployment verification",
+    "docs/deployment-frontend.md exists with Vercel and Netlify steps, API URL configuration, and custom domain setup",
+    ".env.example exists in root with all 16 environment variables and descriptive comments",
+    "apps/web/.env.example exists with VITE_API_URL and comments",
+    "docs/demo-checklist.md exists with 4 sections (24h before, 1h before, during, post) and checkboxes",
+    "docs/troubleshooting.md exists with 6 common issue sections and solutions",
+    "All deployment docs reference actual platform-specific commands (railway, vercel, netlify CLIs)",
+    "Troubleshooting runbook includes actual diagnostic commands (curl, psql, pip list, grep)"
+  ],
+  "verification": [
+    "ls apps/web/vercel.json and cat apps/web/vercel.json shows valid JSON with buildCommand and outputDirectory",
+    "ls apps/web/netlify.toml and cat apps/web/netlify.toml shows valid TOML with command and publish",
+    "cat docs/deployment-backend.md | grep -c 'Railway\\|Render' returns 2 (both platforms covered)",
+    "cat docs/deployment-frontend.md | grep -c 'Vercel\\|Netlify' returns 2",
+    "cat .env.example | grep -c '^[A-Z_]*=' returns 16 (16 env vars)",
+    "cat apps/web/.env.example | grep -q 'VITE_API_URL' returns exit code 0",
+    "cat docs/demo-checklist.md | grep -c '\\[x\\]' returns at least 15 (checklist items)",
+    "cat docs/troubleshooting.md | grep -c '##' returns 6 (6 issue sections)",
+    "Manually test: Copy .env.example to .env, fill in Neon credentials, start backend, verify /health works",
+    "Manually test: Copy apps/web/.env.example to apps/web/.env.local, set VITE_API_URL=http://localhost:8000, start frontend, verify Dashboard API calls work"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

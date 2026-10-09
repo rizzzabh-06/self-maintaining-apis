@@ -1,0 +1,83 @@
+graph TB
+    subgraph "External Systems"
+        GH[GitHub API<br/>Webhooks & PRs]
+        APIS[API Providers<br/>FakePay, Stripe, etc.]
+        GEMINI[Gemini LLM<br/>Fallback Assistant]
+    end
+
+    subgraph "Frontend - React/TypeScript"
+        UI[Web Dashboard<br/>Vite + React]
+        CHARTS[Visualization<br/>Charts & Metrics]
+    end
+
+    subgraph "Backend API - FastAPI"
+        API[REST API<br/>FastAPI Python]
+        AUTH[Authentication<br/>GitHub OAuth]
+        WEBHOOK[Webhook Handler<br/>Provider Events]
+    end
+
+    subgraph "Core Engine"
+        DIFF[Change Detection<br/>OpenAPI Diff]
+        SCAN[AST Scanner<br/>Tree-sitter]
+        IMPACT[Impact Analysis<br/>File Mapping]
+        PLANNER[Migration Planner<br/>Recipe Matcher]
+    end
+
+    subgraph "Migration System"
+        RECIPES[Recipe Engine<br/>Deterministic Transforms]
+        SANDBOX[Sandbox Validator<br/>Isolated Testing]
+        PRGEN[PR Generator<br/>Draft PRs Only]
+    end
+
+    subgraph "Data Layer"
+        NEON[(Neon Postgres<br/>Lakebase DB)]
+    end
+
+    %% External connections
+    APIS -->|Breaking Change<br/>Notification| WEBHOOK
+    GH -->|OAuth| AUTH
+    PRGEN -->|Create Draft PR| GH
+
+    %% Frontend to backend
+    UI <-->|REST API| API
+    CHARTS -.->|Real-time Updates| API
+
+    %% Backend to core
+    WEBHOOK --> DIFF
+    API --> SCAN
+    API --> IMPACT
+    API --> PLANNER
+
+    %% Core engine flow
+    DIFF -->|Changes Detected| IMPACT
+    SCAN -->|Usages Found| IMPACT
+    IMPACT -->|Affected Files| PLANNER
+    PLANNER -->|Select Recipe| RECIPES
+
+    %% Migration flow
+    RECIPES -->|Generate Patches| SANDBOX
+    SANDBOX -->|Validation Results| PRGEN
+    PLANNER -.->|Unknown Provider<br/>Fallback| GEMINI
+    GEMINI -.->|LLM Guidance| RECIPES
+
+    %% Data persistence
+    API <-->|CRUD Operations| NEON
+    WEBHOOK --> NEON
+    RECIPES --> NEON
+    SANDBOX --> NEON
+    PRGEN --> NEON
+
+    %% Styling
+    classDef frontend fill:#818cf8,stroke:#6366f1,stroke-width:2px,color:#fff
+    classDef backend fill:#22d3ee,stroke:#06b6d4,stroke-width:2px,color:#000
+    classDef core fill:#34d399,stroke:#10b981,stroke-width:2px,color:#000
+    classDef migration fill:#fbbf24,stroke:#f59e0b,stroke-width:2px,color:#000
+    classDef external fill:#fb7185,stroke:#f43f5e,stroke-width:2px,color:#fff
+    classDef data fill:#a855f7,stroke:#9333ea,stroke-width:2px,color:#fff
+
+    class UI,CHARTS frontend
+    class API,AUTH,WEBHOOK backend
+    class DIFF,SCAN,IMPACT,PLANNER core
+    class RECIPES,SANDBOX,PRGEN migration
+    class GH,APIS,GEMINI external
+    class NEON data

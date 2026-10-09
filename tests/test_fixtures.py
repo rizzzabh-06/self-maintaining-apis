@@ -143,3 +143,59 @@ class TestDemoRepository:
     def test_config_has_v1_base_url(self):
         config_src = (DEMO_REPO / "src" / "config.ts").read_text()
         assert "https://api.fakepay.dev/v1" in config_src
+
+
+# ── YAML Round-Trip Integrity (Property-Based Tests) ─────────────────
+
+# All four fixture files that must pass round-trip integrity
+FIXTURE_FILES = [
+    API_V1 / "fakepay.yaml",
+    API_V2 / "fakepay.yaml",
+    API_V1 / "stripe.yaml",
+    API_V2 / "stripe.yaml",
+]
+
+
+class TestYAMLFixtureIntegrity:
+    """Property 1: YAML round-trip integrity.
+    
+    **Validates: Requirements 3.4, 4.4, 10.1**
+    
+    For any OpenAPI fixture YAML file, loading → dumping → reloading
+    SHALL produce a dictionary equal to the first load result.
+    """
+
+    @pytest.mark.parametrize("fixture_path", FIXTURE_FILES)
+    def test_yaml_round_trip(self, fixture_path):
+        """Each fixture file must survive a YAML round-trip without loss."""
+        with open(fixture_path) as f:
+            original = yaml.safe_load(f)
+        
+        # Dump and reload
+        dumped = yaml.dump(original)
+        reloaded = yaml.safe_load(dumped)
+        
+        assert reloaded == original, f"{fixture_path.name} failed round-trip"
+
+    @pytest.mark.parametrize("fixture_path", FIXTURE_FILES)
+    def test_openapi_version_declared(self, fixture_path):
+        """Each fixture must declare openapi: '3.0.3' or '3.0.x'."""
+        with open(fixture_path) as f:
+            doc = yaml.safe_load(f)
+        
+        assert "openapi" in doc, f"{fixture_path.name} missing 'openapi' key"
+        assert doc["openapi"].startswith("3.0"), f"{fixture_path.name} has wrong openapi version: {doc['openapi']}"
+
+    @pytest.mark.parametrize("fixture_path", FIXTURE_FILES)
+    def test_property_round_trip_any_fixture(self, fixture_path):
+        """Property test: round-trip must hold for ANY fixture file.
+        
+        Tag: Feature: demo-repo-and-stripe-provider, Property 1: YAML round-trip integrity
+        """
+        with open(fixture_path) as f:
+            original = yaml.safe_load(f)
+        
+        dumped = yaml.dump(original)
+        reloaded = yaml.safe_load(dumped)
+        
+        assert reloaded == original

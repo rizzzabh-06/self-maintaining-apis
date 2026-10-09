@@ -161,3 +161,61 @@ class TestClassifier:
             )
         ]
         assert classify_severity(changes) == "info"
+
+
+# ── Stripe Charges → PaymentIntents diff tests ────────────────────────
+
+
+@pytest.fixture
+def stripe_v1_spec():
+    with open(FIXTURES / "api-v1" / "stripe.yaml") as f:
+        return yaml.safe_load(f)
+
+
+@pytest.fixture
+def stripe_v2_spec():
+    with open(FIXTURES / "api-v2" / "stripe.yaml") as f:
+        return yaml.safe_load(f)
+
+
+class TestStripeSpecDiff:
+    def test_detects_endpoint_rename(self, stripe_v1_spec, stripe_v2_spec):
+        """POST /v1/charges → POST /v1/payment_intents should be detected as ENDPOINT_RENAMED."""
+        changes = diff_specs(stripe_v1_spec, stripe_v2_spec)
+        renames = [c for c in changes if c.type == ChangeType.ENDPOINT_RENAMED]
+        assert len(renames) >= 1
+        r = renames[0]
+        assert r.old_path == "/v1/charges"
+        assert r.new_path == "/v1/payment_intents"
+        assert r.method == "POST"
+        assert r.breaking is True
+
+    def test_rename_preserves_operation_id(self, stripe_v1_spec, stripe_v2_spec):
+        """The rename detection relies on matching operationId — verify it is preserved."""
+        changes = diff_specs(stripe_v1_spec, stripe_v2_spec)
+        renames = [c for c in changes if c.type == ChangeType.ENDPOINT_RENAMED]
+        assert renames[0].operation_id == "createCharge"
+
+    def test_detects_payment_method_required(self, stripe_v1_spec, stripe_v2_spec):
+        """payment_method becoming required should be detected as FIELD_REQUIRED."""
+        changes = diff_specs(stripe_v1_spec, stripe_v2_spec)
+        field_changes = [c for c in changes if c.type == ChangeType.FIELD_REQUIRED]
+        payment_method_changes = [c for c in field_changes if c.field == "payment_method"]
+        assert len(payment_method_changes) >= 1
+        fc = payment_method_changes[0]
+        assert fc.breaking is True
+        assert fc.new_required is True
+
+    def test_no_spurious_removals(self, stripe_v1_spec, stripe_v2_spec):
+        """The rename should NOT produce a phantom ENDPOINT_REMOVED for /v1/charges."""
+        changes = diff_specs(stripe_v1_spec, stripe_v2_spec)
+        removed = [c for c in changes if c.type == ChangeType.ENDPOINT_REMOVED]
+        charge_removals = [c for c in removed if c.old_path == "/v1/charges"]
+        assert len(charge_removals) == 0
+
+    def test_all_detected_changes_are_breaking(self, stripe_v1_spec, stripe_v2_spec):
+        """All changes between Stripe v1 and v2 should be classified as breaking."""
+        from packages.change_engine.classifier import is_breaking
+        changes = diff_specs(stripe_v1_spec, stripe_v2_spec)
+        breaking = [c for c in changes if is_breaking(c)]
+        assert len(breaking) >= 1

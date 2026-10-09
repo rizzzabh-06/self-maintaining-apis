@@ -1,0 +1,68 @@
+sequenceDiagram
+    participant Provider as API Provider<br/>(FakePay/Stripe)
+    participant Webhook as Webhook Handler
+    participant ChangeEngine as Change Detection<br/>Engine
+    participant Scanner as AST Scanner<br/>(Tree-sitter)
+    participant Impact as Impact Analysis<br/>Engine
+    participant Planner as Migration<br/>Planner
+    participant Recipe as Recipe Engine<br/>(Deterministic)
+    participant Sandbox as Sandbox<br/>Validator
+    participant GitHub as GitHub API
+    participant DB as Neon Postgres
+
+    Provider->>Webhook: Breaking Change Released<br/>(v1 → v2)
+    Webhook->>DB: Store Event
+    Webhook->>ChangeEngine: Trigger Analysis
+
+    ChangeEngine->>ChangeEngine: Fetch OpenAPI Specs<br/>(v1 & v2)
+    ChangeEngine->>ChangeEngine: Diff Specs<br/>Detect Changes
+    ChangeEngine->>DB: Store Changes<br/>(ENDPOINT_RENAMED, etc.)
+    
+    Note over ChangeEngine: 3 Breaking Changes Detected:<br/>- Endpoint renamed<br/>- Field now required<br/>- Response schema changed
+
+    ChangeEngine->>Scanner: Scan Repository
+    Scanner->>Scanner: Clone Repository
+    Scanner->>Scanner: Parse Files (Tree-sitter)<br/>TypeScript/Python/Go
+    Scanner->>Scanner: Extract API Usages<br/>(exact line numbers)
+    Scanner->>DB: Store Usages<br/>(15 usages found)
+
+    Scanner->>Impact: Trigger Impact Analysis
+    Impact->>DB: Fetch Usages + Changes
+    Impact->>Impact: Map Changes to Files
+    Impact->>Impact: Calculate Risk Level
+    Impact->>DB: Store Impact Report<br/>(4 files affected, HIGH risk)
+
+    Impact->>Planner: Generate Migration Plan
+    Planner->>DB: Fetch Changes & Impact
+    Planner->>Planner: Match to Recipe<br/>(FakePay v1→v2)
+    
+    alt Deterministic Recipe Available
+        Planner->>Recipe: Use FakePayV1ToV2Recipe
+        Recipe->>Recipe: Generate File Patches<br/>(client, types, route, tests)
+    else Unknown Provider
+        Planner->>Recipe: Fallback to LLM
+        Recipe->>Recipe: Generate patches via Gemini
+    end
+
+    Recipe->>DB: Store Migration Plan<br/>(confidence: 97%)
+
+    Recipe->>Sandbox: Validate Patches
+    Sandbox->>Sandbox: Create Isolated Env
+    Sandbox->>Sandbox: Apply Patches
+    Sandbox->>Sandbox: npm install
+    Sandbox->>Sandbox: npm run build
+    Sandbox->>Sandbox: npm test
+    
+    alt Validation Passes
+        Sandbox->>DB: Store Results<br/>(PASS, 25/25 tests)
+        Sandbox->>GitHub: Create Draft PR
+        GitHub-->>Sandbox: PR URL
+        Sandbox->>DB: Update Migration<br/>(status: pr_created)
+        Note over Sandbox,GitHub: ✓ Draft PR Created<br/>Human Review Required
+    else Validation Fails
+        Sandbox->>DB: Store Results<br/>(FAIL, 18/25 tests)
+        Sandbox->>DB: Update Migration<br/>(status: failed)
+        Note over Sandbox: ✗ PR Blocked<br/>Safety Gate Triggered
+    end
+
+    Sandbox->>Sandbox: Cleanup & Destroy

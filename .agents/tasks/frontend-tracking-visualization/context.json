@@ -1,0 +1,23 @@
+{
+  "project_type": "React 19 + Vite + TypeScript frontend with FastAPI backend and Neon Postgres",
+  "language": "TypeScript",
+  "build_system": "Vite bundler, npm scripts, TypeScript compiler (tsc)",
+  "test_framework": "None currently in apps/web (backend uses pytest)",
+  "build_command": "cd apps/web && npm run build",
+  "test_command": "cd apps/web && npm run lint (oxlint only, no unit tests)",
+  "verification_instructions": "Run `npm run dev` to start dev server on port 5173, verify pages load and charts render, check browser console for errors. Build with `npm run build` to verify TypeScript compilation.",
+  "snapshot_or_generated_files": "None - Vite generates dist/ output not checked in",
+  "environment_constraints": "Frontend runs on port 5173, backend on port 8000. Frontend uses env var VITE_API_URL for backend connection (defaults to empty string for same-origin). recharts library not yet installed. No react-router - navigation via activeTab state in App.tsx.",
+  "contribution_requirements": "Match existing glassmorphism design patterns from index.css. Use inline styles for layout, CSS classes for recurring patterns. All pages use polling (setInterval 30s) not websockets. Navigation via setActiveTab callback, not react-router. Accessibility: aria-labels on interactive elements. Mobile: CSS grid with auto-fit/minmax.",
+  "key_patterns": "Pages follow Dashboard.tsx pattern: polling with useEffect, onNavigate prop for tab changes, glass-panel cards, stagger animations, badge-* status classes. API client returns raw fetch().json() with no error handling - components catch errors. Mock data fallbacks when backend unavailable.",
+  "relevant_files": [
+    "apps/web/src/App.tsx",
+    "apps/web/src/components/Navbar.tsx",
+    "apps/web/src/pages/Dashboard.tsx",
+    "apps/web/src/pages/Migration.tsx",
+    "apps/web/src/index.css",
+    "apps/web/src/api/client.ts",
+    "apps/web/package.json"
+  ],
+  "directory_structure": "apps/web/src/ contains: App.tsx (main app, tab routing), index.css (design system), api/client.ts (API functions), components/ (Navbar, OnboardingWizard), pages/ (Dashboard, Repositories, Inventory, Changes, Impact, Migration, Settings, SpecFeeds)"
+}

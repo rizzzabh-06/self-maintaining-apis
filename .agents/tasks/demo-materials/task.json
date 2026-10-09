@@ -1,0 +1,12 @@
+{
+  "task_id": "task-demo-materials",
+  "task_description": "Build comprehensive demo materials for technical review: demo data seeder, interactive landing page, video walkthrough with Loom, public tunnel setup, demo script, pitch deck, GitHub docs, and deployment guide.",
+  "status": "pending",
+  "feature_order": [
+    "FEAT-001",
+    "FEAT-002",
+    "FEAT-003",
+    "FEAT-004"
+  ],
+  "blocked_reason": null
+}

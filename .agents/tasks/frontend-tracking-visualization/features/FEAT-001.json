@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Install recharts library and create reusable chart wrapper components (TrendLineChart, SuccessRatePieChart, RepositoryBarChart, ConfidenceGauge) plus supporting visualization components (LivePipelineMonitor, MigrationCard, ValidationResults). All components handle empty/mock data gracefully and follow existing glassmorphism patterns from index.css.",
+  "status": "pending",
+  "steps": [
+    "Add 'recharts': '2.15.3' to apps/web/package.json dependencies object (exact version)",
+    "Run 'cd apps/web && npm install' to install recharts",
+    "Create apps/web/src/components/TrendLineChart.tsx - wraps recharts LineChart for breaking changes over time with ResponsiveContainer, CartesianGrid, XAxis (dataKey: 'date'), YAxis, Tooltip, Line (dataKey: 'count', stroke: var(--accent-cyan)). Props: data (Array<{date: string, count: number}>), title (string), height (number, default 280). Handle empty data with 'No data available' message in glass-panel div.",
+    "Create apps/web/src/components/SuccessRatePieChart.tsx - wraps recharts PieChart for migration outcomes. Props: data (Array<{name: string, value: number, color: string}>), height (number, default 260). Use ResponsiveContainer, Pie with Cell elements for custom colors, Tooltip, Legend. Handle empty data gracefully.",
+    "Create apps/web/src/components/RepositoryBarChart.tsx - wraps recharts BarChart for most-affected repos. Props: data (Array<{repo: string, count: number}>), height (number, default 300). Use ResponsiveContainer, CartesianGrid, XAxis (dataKey: 'repo'), YAxis, Tooltip, Bar (dataKey: 'count', fill: var(--accent-indigo)). Handle empty data.",
+    "Create apps/web/src/components/ConfidenceGauge.tsx - circular SVG gauge for confidence score percentage. Props: value (number 0-100), size (number, default 120), label (string). Draw SVG circle with strokeDasharray/strokeDashoffset to show percentage, center text showing value + '%'. Use gradient stroke from accent-emerald to accent-cyan. Handle edge cases (value < 0 or > 100).",
+    "Create apps/web/src/components/LivePipelineMonitor.tsx - real-time polling progress for running migrations. Props: migrationId (string), onComplete (callback). Polls fetchValidation every 5s, displays step-by-step progress with timestamps, ETA estimate, retry count. Use glass-panel card with pipeline-step styling from Dashboard. Show spinner when running, checkmark when complete.",
+    "Create apps/web/src/components/MigrationCard.tsx - compact migration info card. Props: migration (object with id, provider, status, timestamp, confidence, repoName), onClick (callback). Use glass-panel-interactive, badge for status, format timestamp as relative time (e.g. '2h ago'), show confidence as gauge or percentage. Quick action buttons: view details, view PR.",
+    "Create apps/web/src/components/ValidationResults.tsx - collapsible test output viewer. Props: validationData (object with build_logs, test_results, contract_checks). Expandable sections for each category with pass/fail indicators (CheckCircle2/XCircle icons). Diff highlighting for contract violations using diff-line-* classes from index.css. Handle null/undefined data."
+  ],
+  "acceptance_criteria": [
+    "recharts version 2.15.3 installed in apps/web/package.json",
+    "All 7 components created in apps/web/src/components/ with TypeScript interfaces for props",
+    "Each chart component renders with mock data and shows graceful empty state",
+    "All components use CSS classes from index.css (glass-panel, badge-*, diff-line-*) and CSS variables (--accent-*)",
+    "ConfidenceGauge renders circular SVG without external dependencies",
+    "LivePipelineMonitor polls API and updates UI every 5 seconds",
+    "No TypeScript compilation errors"
+  ],
+  "verification": [
+    "cd apps/web && npm run build - TypeScript compilation succeeds with no errors",
+    "cd apps/web && npm run lint - oxlint passes with no warnings",
+    "Start dev server with 'npm run dev', import and render each chart component in a test page, verify they display with mock data and empty states"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

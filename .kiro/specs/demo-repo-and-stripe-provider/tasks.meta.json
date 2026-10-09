@@ -1,0 +1,323 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create `tests/fixtures/api-v1/stripe.yaml`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539508779
+      },
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539521378
+      },
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791544615034
+      }
+    ],
+    "1.2 Create `tests/fixtures/api-v2/stripe.yaml`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539508872
+      },
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539527242
+      },
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791544620283
+      }
+    ],
+    "2.1 Write unit tests for Stripe diff output": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539508907
+      },
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791544637852
+      },
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791545391757
+      }
+    ],
+    "3.1 Create `packages/migration_engine/recipes/stripe.py` with `can_handle()`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539508965
+      },
+      {
+        "executionId": "d9d1b745-9ea5-4f61-999c-9b1ae3121a02",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791545495185
+      },
+      {
+        "executionId": "d9d1b745-9ea5-4f61-999c-9b1ae3121a02",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791546516616
+      }
+    ],
+    "3.2 Implement `apply()` — patch `src/lib/stripe-client.ts`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509005
+      },
+      {
+        "executionId": "84d9d315-35fe-4276-bba1-a57619af79c8",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791547064549
+      }
+    ],
+    "3.3 Implement `apply()` — patch `src/types/stripe.ts`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509052
+      },
+      {
+        "executionId": "84d9d315-35fe-4276-bba1-a57619af79c8",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791547065394
+      }
+    ],
+    "3.4 Implement `apply()` — patch `src/app/api/checkout/route.ts`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509085
+      },
+      {
+        "executionId": "84d9d315-35fe-4276-bba1-a57619af79c8",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791547067703
+      }
+    ],
+    "3.5 Implement `apply()` — patch `tests/checkout.test.ts`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509120
+      },
+      {
+        "executionId": "84d9d315-35fe-4276-bba1-a57619af79c8",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791547068036
+      }
+    ],
+    "3.6 Return `MigrationPlan` from `apply()`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509190
+      },
+      {
+        "executionId": "84d9d315-35fe-4276-bba1-a57619af79c8",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791547068828
+      }
+    ],
+    "4.1 Update `packages/migration_engine/planner.py` to import and register the Stripe recipe": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509219
+      }
+    ],
+    "5. Checkpoint — run existing test suite": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509251
+      }
+    ],
+    "6.1 Add `_get_demo_repo_path()` helper to `apps/api/app/api/routes/repositories.py`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509270
+      }
+    ],
+    "6.2 Add `_get_demo_repo_path()` helper to `apps/api/app/api/routes/migrations.py`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509302
+      }
+    ],
+    "7.1 Update `list_github_repositories()` in `apps/api/app/api/routes/repositories.py`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509333
+      }
+    ],
+    "8.1 Create `demo-repo/src/lib/config.ts`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509365
+      },
+      {
+        "executionId": "d9d1b745-9ea5-4f61-999c-9b1ae3121a02",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791545496069
+      },
+      {
+        "executionId": "d9d1b745-9ea5-4f61-999c-9b1ae3121a02",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791546517477
+      }
+    ],
+    "8.2 Create `demo-repo/src/types/fakepay.ts`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509388
+      },
+      {
+        "executionId": "d9d1b745-9ea5-4f61-999c-9b1ae3121a02",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791545496882
+      },
+      {
+        "executionId": "d9d1b745-9ea5-4f61-999c-9b1ae3121a02",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791546518450
+      }
+    ],
+    "8.3 Create `demo-repo/src/types/stripe.ts`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509422
+      },
+      {
+        "executionId": "d9d1b745-9ea5-4f61-999c-9b1ae3121a02",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791545498099
+      },
+      {
+        "executionId": "d9d1b745-9ea5-4f61-999c-9b1ae3121a02",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791546519233
+      }
+    ],
+    "8.4 Create `demo-repo/src/lib/fakepay-client.ts`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509454
+      }
+    ],
+    "8.5 Create `demo-repo/src/lib/stripe-client.ts`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509486
+      }
+    ],
+    "8.6 Create `demo-repo/src/app/api/checkout/route.ts`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509519
+      }
+    ],
+    "8.7 Create `demo-repo/tests/checkout.test.ts`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509550
+      }
+    ],
+    "8.8 Create `demo-repo/package.json`, `demo-repo/tsconfig.json`, and `demo-repo/README.md`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509582
+      }
+    ],
+    "9.1 Update `pyproject.toml` dev extras to include `hypothesis>=6.0`": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509603
+      },
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539532777
+      },
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791544625504
+      }
+    ],
+    "10.1 Create or update `tests/test_fixtures.py` with round-trip property": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509632
+      },
+      {
+        "executionId": "d9d1b745-9ea5-4f61-999c-9b1ae3121a02",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791545498618
+      },
+      {
+        "executionId": "d9d1b745-9ea5-4f61-999c-9b1ae3121a02",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791546520695
+      }
+    ],
+    "11.1 Verify backward compatibility with existing test suite": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791539509654
+      }
+    ],
+    "1. Add Stripe OpenAPI fixture files": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791544620323
+      }
+    ],
+    "9. Add `hypothesis` to dev dependencies": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791544625534
+      }
+    ],
+    "2. Verify `diff_specs()` detects Stripe changes correctly": [
+      {
+        "executionId": "e534a465-1864-4ed6-a4c0-b288d3b17b9a",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791545391789
+      }
+    ],
+    "10. Write YAML round-trip property test (Property 1)": [
+      {
+        "executionId": "d9d1b745-9ea5-4f61-999c-9b1ae3121a02",
+        "chatSessionId": "sess_fe3b6505-c0c9-4b83-a08c-9a93a5683588",
+        "timestamp": 1791546520743
+      }
+    ]
+  }
+}
