@@ -9,6 +9,7 @@ from .models import ScanResult, APIUsage
 from .dependencies import scan_package_json
 from .urls import scan_urls_in_file
 from .typescript.parser import scan_typescript_file
+from .python.parser import scan_python_file
 
 IGNORE_DIRS = {
     ".git",
@@ -18,9 +19,12 @@ IGNORE_DIRS = {
     "coverage",
     ".pytest_cache",
     "__pycache__",
+    ".venv",
+    "venv",
 }
 
 SOURCE_EXTENSIONS = {".ts", ".tsx", ".js", ".jsx", ".mjs"}
+PYTHON_EXTENSIONS = {".py"}
 CONFIG_EXTENSIONS = {".json", ".yaml", ".yml", ".env", ".env.example", ".ts", ".js"}
 
 
@@ -65,6 +69,13 @@ def scan_repository(repo_path: str | Path) -> ScanResult:
                 for u in ts_usages:
                     discovered_providers.add(u.provider)
                 all_usages.extend(ts_usages)
+
+            # C. Python Source & Route Analysis
+            if ext in PYTHON_EXTENSIONS:
+                py_usages = scan_python_file(file_path, root)
+                for u in py_usages:
+                    discovered_providers.add(u.provider)
+                all_usages.extend(py_usages)
 
     # Filter out generic_http if specific providers are discovered
     real_providers = [p for p in sorted(discovered_providers) if p != "generic_http"]
