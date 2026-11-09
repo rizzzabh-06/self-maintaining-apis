@@ -21,6 +21,16 @@ TEMPLATE_PATH_REGEX = re.compile(
     re.IGNORECASE,
 )
 
+# Regex for generic fetch or apiFetch calls with URL: apiFetch('/api/entities', ...) or fetch('/api/...')
+GENERIC_FETCH_CALL_REGEX = re.compile(
+    r"""\b(?:apiFetch|fetch|request|apiClient)\s*(?:<[^>]+>)?\s*\(\s*[`"'](/api/[^`"'\s\?]+|\/[a-zA-Z0-9_\-\/]+)""",
+    re.IGNORECASE,
+)
+GENERIC_FETCH_TEMPLATE_REGEX = re.compile(
+    r"""\b(?:apiFetch|fetch|request|apiClient)\s*(?:<[^>]+>)?\s*\(\s*`(/api/[^`\s\?]+|\/[a-zA-Z0-9_\-\/]+)`""",
+    re.IGNORECASE,
+)
+
 # Known SDK or client method calls
 CLIENT_METHOD_REGEX = re.compile(
     r"""\b(?:fakepay|stripe|client|api)\s*\.\s*([a-zA-Z0-9_]+)\s*\(""",
@@ -138,6 +148,46 @@ def scan_typescript_file(
                             raw_match=h_match.group(0),
                         )
                     )
+
+        # 2b. Check generic apiFetch/fetch calls: apiFetch('/api/entities')
+        for gf_match in GENERIC_FETCH_CALL_REGEX.finditer(line):
+            raw_path = gf_match.group(1)
+            norm_path = normalize_endpoint_template(raw_path)
+            if not any(u.line_number == idx and u.endpoint == norm_path for u in usages):
+                usages.append(
+                    APIUsage(
+                        provider=provider,
+                        usage_type=UsageType.ENDPOINT_CALL,
+                        file_path=rel_path,
+                        endpoint=norm_path,
+                        method="GET",
+                        line_number=idx,
+                        symbol=enclosing_symbol,
+                        confidence=0.90,
+                        snippet=line_clean,
+                        raw_match=gf_match.group(0),
+                    )
+                )
+
+        # 2c. Check generic template apiFetch: apiFetch(`/api/entities/${id}`)
+        for gt_match in GENERIC_FETCH_TEMPLATE_REGEX.finditer(line):
+            raw_path = gt_match.group(1)
+            norm_path = normalize_endpoint_template(raw_path)
+            if not any(u.line_number == idx and u.endpoint == norm_path for u in usages):
+                usages.append(
+                    APIUsage(
+                        provider=provider,
+                        usage_type=UsageType.ENDPOINT_CALL,
+                        file_path=rel_path,
+                        endpoint=norm_path,
+                        method="GET",
+                        line_number=idx,
+                        symbol=enclosing_symbol,
+                        confidence=0.90,
+                        snippet=line_clean,
+                        raw_match=gt_match.group(0),
+                    )
+                )
 
         # 3. Check client method calls: fakepay.createPayment(...)
         for cm_match in CLIENT_METHOD_REGEX.finditer(line):
