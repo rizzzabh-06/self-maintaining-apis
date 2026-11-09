@@ -42,6 +42,16 @@ if [[ -f .env ]]; then
     info "Loaded .env"
 fi
 
+# Parse flags
+RESTART_EXISTING=false
+for arg in "$@"; do
+    case "$arg" in
+        --restart|--force|-f)
+            RESTART_EXISTING=true
+            ;;
+    esac
+done
+
 # ---- cleanup on exit --------------------------------------------------------
 PIDS=()
 cleanup() {
@@ -52,38 +62,64 @@ cleanup() {
     done
     # Kill any lingering ngrok process we started
     pkill -f "ngrok http ${BACKEND_PORT}" 2>/dev/null || true
-    success "All processes stopped. Goodbye!"
+    success "All script-managed processes stopped. Goodbye!"
 }
 trap cleanup EXIT INT TERM
 
-# ---- 1. Start backend -------------------------------------------------------
-info "Starting FastAPI backend on port ${BACKEND_PORT}..."
-PYTHONPATH="$PROJECT_ROOT" uvicorn apps.api.app.main:app \
-    --reload \
-    --port "$BACKEND_PORT" \
-    --log-level info \
-    > "$PROJECT_ROOT/.backend.log" 2>&1 &
-BACKEND_PID=$!
-PIDS+=("$BACKEND_PID")
-info "Backend PID: ${BACKEND_PID} → tail -f .backend.log"
-
-# Give the backend a moment to bind
-sleep 2
-if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
-    error "Backend failed to start. Check .backend.log"
-    cat "$PROJECT_ROOT/.backend.log" | tail -20
-    exit 1
+# ---- 1. Check / Start backend -----------------------------------------------
+if lsof -ti ":$BACKEND_PORT" >/dev/null 2>&1; then
+    EXISTING_BACKEND_PID=$(lsof -ti ":$BACKEND_PORT" | head -1)
+    if [ "$RESTART_EXISTING" = true ]; then
+        warn "Restart flag passed: killing existing process on port ${BACKEND_PORT} (PID ${EXISTING_BACKEND_PID})..."
+        kill -9 $(lsof -ti ":$BACKEND_PORT") 2>/dev/null || true
+        sleep 1
+    else
+        success "Backend already running on port ${BACKEND_PORT} (PID ${EXISTING_BACKEND_PID}) — reusing it."
+    fi
 fi
-success "Backend is up at http://localhost:${BACKEND_PORT}"
 
-# ---- 2. Start frontend ------------------------------------------------------
-info "Starting Vite dev server on port ${FRONTEND_PORT}..."
-(cd "$PROJECT_ROOT/apps/web" && npm run dev -- --port "$FRONTEND_PORT") \
-    > "$PROJECT_ROOT/.frontend.log" 2>&1 &
-FRONTEND_PID=$!
-PIDS+=("$FRONTEND_PID")
-info "Frontend PID: ${FRONTEND_PID} → tail -f .frontend.log"
-success "Frontend will be at http://localhost:${FRONTEND_PORT}"
+if ! lsof -ti ":$BACKEND_PORT" >/dev/null 2>&1; then
+    info "Starting FastAPI backend on port ${BACKEND_PORT}..."
+    PYTHONPATH="$PROJECT_ROOT" uvicorn apps.api.app.main:app \
+        --reload \
+        --port "$BACKEND_PORT" \
+        --log-level info \
+        > "$PROJECT_ROOT/.backend.log" 2>&1 &
+    BACKEND_PID=$!
+    PIDS+=("$BACKEND_PID")
+    info "Backend PID: ${BACKEND_PID} → tail -f .backend.log"
+
+    # Give the backend a moment to bind
+    sleep 2
+    if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
+        error "Backend failed to start. Check .backend.log"
+        cat "$PROJECT_ROOT/.backend.log" | tail -20
+        exit 1
+    fi
+fi
+success "Backend is ready at http://localhost:${BACKEND_PORT}"
+
+# ---- 2. Check / Start frontend ----------------------------------------------
+if lsof -ti ":$FRONTEND_PORT" >/dev/null 2>&1; then
+    EXISTING_FRONTEND_PID=$(lsof -ti ":$FRONTEND_PORT" | head -1)
+    if [ "$RESTART_EXISTING" = true ]; then
+        warn "Restart flag passed: killing existing process on port ${FRONTEND_PORT} (PID ${EXISTING_FRONTEND_PID})..."
+        kill -9 $(lsof -ti ":$FRONTEND_PORT") 2>/dev/null || true
+        sleep 1
+    else
+        success "Frontend already running on port ${FRONTEND_PORT} (PID ${EXISTING_FRONTEND_PID}) — reusing it."
+    fi
+fi
+
+if ! lsof -ti ":$FRONTEND_PORT" >/dev/null 2>&1; then
+    info "Starting Vite dev server on port ${FRONTEND_PORT}..."
+    (cd "$PROJECT_ROOT/apps/web" && npm run dev -- --port "$FRONTEND_PORT") \
+        > "$PROJECT_ROOT/.frontend.log" 2>&1 &
+    FRONTEND_PID=$!
+    PIDS+=("$FRONTEND_PID")
+    info "Frontend PID: ${FRONTEND_PID} → tail -f .frontend.log"
+fi
+success "Frontend is ready at http://localhost:${FRONTEND_PORT}"
 
 # ---- 3. Start ngrok tunnel --------------------------------------------------
 info "Starting ngrok tunnel → http://localhost:${BACKEND_PORT}..."
