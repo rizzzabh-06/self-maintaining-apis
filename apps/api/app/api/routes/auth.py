@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from apps.api.app.db.session import get_db
 from apps.api.app.models.db_models import User, Organization, GitHubAppInstallation, AutomationSettings
+from apps.api.app.core.config import load_env
 
 router = APIRouter(prefix="/api/auth", tags=["Auth & Workspace"])
 
@@ -32,6 +33,7 @@ class WorkspaceCreateRequest(BaseModel):
 @router.get("/session")
 def get_session(db: Session = Depends(get_db)):
     """Retrieve current logged-in user, active workspace, and GitHub connection status."""
+    load_env(override=True)
     # Find or create primary organization/workspace
     org = db.query(Organization).filter(Organization.id == "org-wispy-boat-92392834").first()
     if not org:
@@ -73,10 +75,12 @@ def get_session(db: Session = Depends(get_db)):
 @router.get("/github/authorize-url")
 def get_github_authorize_url(redirect_uri: Optional[str] = Query(None)):
     """Generate GitHub App installation or OAuth URL."""
-    client_id = os.getenv("GITHUB_CLIENT_ID") or os.getenv("GITHUB_APP_ID")
+    load_env(override=True)
+    client_id = os.getenv("GITHUB_CLIENT_ID")
+    app_id = os.getenv("GITHUB_APP_ID")
     app_name = os.getenv("GITHUB_APP_NAME", "self-maintaining-api-agent")
 
-    if os.getenv("GITHUB_APP_ID") and not os.getenv("GITHUB_CLIENT_ID"):
+    if app_id and not client_id:
         # GitHub App installation URL
         install_url = f"https://github.com/apps/{app_name}/installations/new"
         return {"url": install_url, "type": "github_app"}
@@ -104,6 +108,7 @@ def github_oauth_callback(
     db: Session = Depends(get_db),
 ):
     """Exchange OAuth code for GitHub access token and authenticate user."""
+    load_env(override=True)
     client_id = os.getenv("GITHUB_CLIENT_ID")
     client_secret = os.getenv("GITHUB_CLIENT_SECRET")
     if not client_id or not client_secret:
