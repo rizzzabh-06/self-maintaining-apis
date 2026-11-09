@@ -55,3 +55,9 @@ demo-repo/
 
 
 
+
+# ngrok runtime URL file
+.env.ngrok
+.backend.log
+.frontend.log
+.ngrok.log

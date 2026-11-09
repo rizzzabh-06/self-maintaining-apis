@@ -126,3 +126,4 @@ def get_analytics(db: Session = Depends(get_db)) -> Dict[str, Any]:
         "breaking_changes_trend": trend,
         "providers": provider_breakdown,
     }
+

@@ -64,3 +64,122 @@ class TestWebhookAuthentication:
         assert pipeline["validation_status"] == "PASS"
         assert pipeline["pr_created"] is True
         assert pipeline["draft_pr"]["is_draft"] is True
+
+
+# ---------------------------------------------------------------------------
+# GitHub App Webhook tests
+# ---------------------------------------------------------------------------
+
+GITHUB_SECRET = "test_github_webhook_secret_123"
+
+
+def compute_github_signature(payload: bytes, secret: str = GITHUB_SECRET) -> str:
+    """Return the sha256=<hex> header value GitHub sends."""
+    digest = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
+    return f"sha256={digest}"
+
+
+class TestGitHubWebhook:
+    def test_ping_event_returns_ok(self):
+        payload = {"zen": "Design for failure.", "hook_id": 42}
+        body = json.dumps(payload).encode()
+        sig = compute_github_signature(body)
+        response = client.post(
+            "/webhooks/github",
+            content=body,
+            headers={
+                "Content-Type": "application/json",
+                "X-GitHub-Event": "ping",
+                "X-GitHub-Delivery": "test-delivery-001",
+                "X-Hub-Signature-256": sig,
+            },
+        )
+        assert response.status_code == 202
+        data = response.json()
+        assert data["status"] == "ok"
+        assert "zen" in data
+
+    def test_missing_signature_returns_401_when_secret_set(self, monkeypatch):
+        monkeypatch.setenv("GITHUB_WEBHOOK_SECRET", GITHUB_SECRET)
+        import importlib
+        import apps.api.app.api.routes.webhooks as wh_mod
+        monkeypatch.setattr(wh_mod, "GITHUB_WEBHOOK_SECRET", GITHUB_SECRET)
+
+        payload = {"zen": "test"}
+        body = json.dumps(payload).encode()
+        response = client.post(
+            "/webhooks/github",
+            content=body,
+            headers={
+                "Content-Type": "application/json",
+                "X-GitHub-Event": "ping",
+            },
+        )
+        assert response.status_code == 401
+
+    def test_push_to_default_branch_triggers_pipeline(self):
+        payload = {
+            "ref": "refs/heads/main",
+            "repository": {
+                "full_name": "demo-org/demo-checkout",
+                "default_branch": "main",
+            },
+        }
+        body = json.dumps(payload).encode()
+        sig = compute_github_signature(body)
+        response = client.post(
+            "/webhooks/github",
+            content=body,
+            headers={
+                "Content-Type": "application/json",
+                "X-GitHub-Event": "push",
+                "X-GitHub-Delivery": "test-delivery-002",
+                "X-Hub-Signature-256": sig,
+            },
+        )
+        assert response.status_code == 202
+        data = response.json()
+        assert data["status"] == "accepted"
+        assert "demo-org/demo-checkout" in data["message"]
+
+    def test_push_to_non_default_branch_is_ignored(self):
+        payload = {
+            "ref": "refs/heads/feature/my-branch",
+            "repository": {
+                "full_name": "demo-org/demo-checkout",
+                "default_branch": "main",
+            },
+        }
+        body = json.dumps(payload).encode()
+        sig = compute_github_signature(body)
+        response = client.post(
+            "/webhooks/github",
+            content=body,
+            headers={
+                "Content-Type": "application/json",
+                "X-GitHub-Event": "push",
+                "X-GitHub-Delivery": "test-delivery-003",
+                "X-Hub-Signature-256": sig,
+            },
+        )
+        assert response.status_code == 202
+        data = response.json()
+        assert data["status"] == "ignored"
+
+    def test_unhandled_event_is_ignored(self):
+        payload = {"action": "created"}
+        body = json.dumps(payload).encode()
+        sig = compute_github_signature(body)
+        response = client.post(
+            "/webhooks/github",
+            content=body,
+            headers={
+                "Content-Type": "application/json",
+                "X-GitHub-Event": "star",
+                "X-GitHub-Delivery": "test-delivery-004",
+                "X-Hub-Signature-256": sig,
+            },
+        )
+        assert response.status_code == 202
+        data = response.json()
+        assert data["status"] == "ignored"
