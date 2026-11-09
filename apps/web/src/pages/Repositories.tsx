@@ -498,7 +498,7 @@ export const Repositories = () => {
               </div>
             )}
 
-            {/* Option 1: GitHub OAuth */}
+            {/* Option 1: Personal Access Token (Direct & Immediate) */}
             <div
               style={{
                 background: "var(--frost)",
@@ -508,22 +508,45 @@ export const Repositories = () => {
                 marginBottom: "1.25rem",
               }}
             >
-              <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--ink)", marginBottom: "4px" }}>
-                Option 1: One-Click GitHub OAuth
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <span style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--ink)" }}>
+                  Personal Access Token (Recommended)
+                </span>
+                <a
+                  href="https://github.com/settings/tokens/new?scopes=repo,read:org&description=Self-Maintaining-APIs"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: "var(--blue)", fontSize: "0.78rem", fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: "2px" }}
+                >
+                  <span>Generate Token</span>
+                  <ExternalLink size={11} />
+                </a>
               </div>
-              <p style={{ fontSize: "0.8rem", color: "var(--ink-light)", marginBottom: "1rem", margin: "0 0 1rem 0" }}>
-                Authenticate directly with GitHub in an isolated OAuth popup window.
+              <p style={{ fontSize: "0.8rem", color: "var(--ink-light)", marginBottom: "0.875rem", lineHeight: 1.5, margin: "0 0 0.875rem 0" }}>
+                Paste a GitHub Personal Access Token (classic or fine-grained) with <code>repo</code> scope to retrieve repositories and run real-time AST scans.
               </p>
+              <input
+                type="password"
+                className="input-field"
+                placeholder="ghp_••••••••••••••••••••••••••••••••"
+                value={tokenInput}
+                onChange={(e) => {
+                  setTokenInput(e.target.value);
+                  setAuthError(null);
+                }}
+                style={{ marginBottom: "10px", width: "100%" }}
+              />
               <button
                 className="btn-primary"
-                onClick={handleOAuthConnect}
+                onClick={handleConnectToken}
+                disabled={!tokenInput.trim() || tokenConnecting}
                 style={{ width: "100%", justifyContent: "center" }}
               >
-                Authorize with GitHub OAuth
+                {tokenConnecting ? "Validating with GitHub API..." : "Verify & Connect Account"}
               </button>
             </div>
 
-            {/* Option 2: Personal Access Token */}
+            {/* Option 2: GitHub OAuth App */}
             <div
               style={{
                 background: "var(--frost)",
@@ -533,28 +556,22 @@ export const Repositories = () => {
               }}
             >
               <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--ink)", marginBottom: "4px" }}>
-                Option 2: Personal Access Token (PAT)
+                One-Click GitHub OAuth
               </div>
-              <p style={{ fontSize: "0.8rem", color: "var(--ink-light)", marginBottom: "0.75rem", margin: "0 0 0.75rem 0" }}>
-                Generate a classic token or fine-grained token with <code>repo</code> scope on GitHub.
+              <p style={{ fontSize: "0.8rem", color: "var(--ink-light)", marginBottom: "0.875rem", lineHeight: 1.5, margin: "0 0 0.875rem 0" }}>
+                {session?.github?.has_app_configured
+                  ? "Authorize via standard GitHub OAuth in a popup window."
+                  : "To enable 1-click OAuth, add GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET to your .env file."}
               </p>
-              <input
-                type="password"
-                className="input-field"
-                placeholder="ghp_••••••••••••••••••••••••••••••••"
-                value={tokenInput}
-                onChange={(e) => setTokenInput(e.target.value)}
-                style={{ marginBottom: "10px", width: "100%" }}
-              />
               <button
                 className="btn-secondary"
-                onClick={handleConnectToken}
-                disabled={!tokenInput.trim() || tokenConnecting}
+                onClick={handleOAuthConnect}
                 style={{ width: "100%", justifyContent: "center" }}
               >
-                {tokenConnecting ? "Validating with GitHub API..." : "Verify & Save Token"}
+                Authorize with GitHub OAuth
               </button>
             </div>
+
 
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
               <button className="btn-secondary" onClick={() => setShowAuthModal(false)}>

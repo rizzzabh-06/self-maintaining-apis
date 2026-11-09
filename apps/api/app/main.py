@@ -14,6 +14,7 @@ from apps.api.app.api.routes.changes import router as changes_router
 from apps.api.app.api.routes.impact import router as impact_router
 from apps.api.app.api.routes.migrations import router as migrations_router
 from apps.api.app.api.routes.validations import router as validations_router
+from apps.api.app.api.routes.analytics import router as analytics_router
 
 app = FastAPI(
     title="Self-Maintaining API Agent API",
@@ -40,6 +41,8 @@ app.include_router(changes_router)
 app.include_router(impact_router)
 app.include_router(migrations_router)
 app.include_router(validations_router)
+app.include_router(analytics_router)
+
 
 
 @app.get("/health")
