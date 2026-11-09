@@ -45,13 +45,13 @@ export const MigrationCard: React.FC<MigrationCardProps> = ({ migration, onClick
       case 'failed':
         return <span className="badge badge-critical">Failed</span>;
       default:
-        return <span className="badge badge-amber">Pending</span>;
+        return <span className="badge badge-warning">Pending</span>;
     }
   };
 
   return (
     <div
-      className="glass-panel glass-panel-interactive"
+      className="card card-interactive"
       style={{
         padding: '1.25rem',
         cursor: onClick ? 'pointer' : 'default',
@@ -64,10 +64,10 @@ export const MigrationCard: React.FC<MigrationCardProps> = ({ migration, onClick
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ flex: 1 }}>
-          <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '0.25rem' }}>
             {migration.repoName}
           </h3>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--ink-light)', margin: 0 }}>
             {migration.provider} migration
           </p>
         </div>
@@ -78,9 +78,9 @@ export const MigrationCard: React.FC<MigrationCardProps> = ({ migration, onClick
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <ConfidenceGauge value={migration.confidence} size={80} label="Confidence" />
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--ink-light)' }}>
           <Clock size={14} />
-          <span style={{ fontSize: '0.75rem' }}>{formatRelativeTime(migration.timestamp)}</span>
+          <span style={{ fontSize: '0.78rem' }}>{formatRelativeTime(migration.timestamp)}</span>
         </div>
       </div>
 
@@ -90,12 +90,12 @@ export const MigrationCard: React.FC<MigrationCardProps> = ({ migration, onClick
           display: 'flex',
           gap: '0.5rem',
           paddingTop: '0.75rem',
-          borderTop: '1px solid var(--border-subtle)',
+          borderTop: '1px solid var(--border)',
         }}
       >
         <button
           className="btn-secondary"
-          style={{ flex: 1, fontSize: '0.75rem', padding: '0.5rem' }}
+          style={{ flex: 1, fontSize: '0.78rem', padding: '0.5rem' }}
           onClick={(e) => {
             e.stopPropagation();
             onClick?.();
@@ -106,10 +106,9 @@ export const MigrationCard: React.FC<MigrationCardProps> = ({ migration, onClick
         </button>
         <button
           className="btn-ghost"
-          style={{ flex: 1, fontSize: '0.75rem', padding: '0.5rem' }}
+          style={{ flex: 1, fontSize: '0.78rem', padding: '0.5rem', border: '1px solid var(--border)' }}
           onClick={(e) => {
             e.stopPropagation();
-            // Navigate to PR (placeholder)
           }}
         >
           <ExternalLink size={14} />
@@ -119,3 +118,4 @@ export const MigrationCard: React.FC<MigrationCardProps> = ({ migration, onClick
     </div>
   );
 };
+

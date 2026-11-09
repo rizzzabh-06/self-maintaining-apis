@@ -68,10 +68,10 @@ const DEFAULT_FEEDS: Feed[] = [
 ];
 
 const STATUS_CONFIG: Record<FeedStatus, { color: string; label: string; dotColor: string }> = {
-  connected: { color: "#34d399", label: "Connected", dotColor: "#34d399" },
-  polling: { color: "#818cf8", label: "Polling...", dotColor: "#818cf8" },
-  error: { color: "#fb7185", label: "Error", dotColor: "#fb7185" },
-  idle: { color: "#64748b", label: "Idle", dotColor: "#64748b" },
+  connected: { color: "var(--success)", label: "Connected", dotColor: "var(--success)" },
+  polling: { color: "var(--blue)", label: "Polling...", dotColor: "var(--blue)" },
+  error: { color: "var(--error)", label: "Error", dotColor: "var(--error)" },
+  idle: { color: "var(--ink-light)", label: "Idle", dotColor: "var(--gray-400)" },
 };
 
 const TYPE_ICON = {
@@ -96,9 +96,9 @@ const MOCK_EVENTS: SpecEvent[] = [
 ];
 
 const KIND_STYLES: Record<SpecEvent["kind"], { badge: string; dot: string }> = {
-  change: { badge: "badge-critical", dot: "#fb7185" },
-  stable: { badge: "badge-success", dot: "#34d399" },
-  fetch: { badge: "badge-info", dot: "#818cf8" },
+  change: { badge: "badge-critical", dot: "var(--error)" },
+  stable: { badge: "badge-success", dot: "var(--success)" },
+  fetch: { badge: "badge-info", dot: "var(--blue)" },
 };
 
 export const SpecFeeds: React.FC = () => {
@@ -148,22 +148,24 @@ export const SpecFeeds: React.FC = () => {
   const changesDetected = feeds.filter((f) => f.changeDetected).length;
 
   return (
-    <div style={{ maxWidth: "1500px", margin: "0 auto", padding: "2rem 1.5rem" }}>
+    <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "2.5rem 2rem" }}>
       {/* Header */}
       <div
-        style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.75rem", flexWrap: "wrap", gap: "1rem" }}
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}
       >
         <div className="animate-fade-up">
-          <div className="section-eyebrow" style={{ color: "var(--accent-amber)" }}>
-            <Rss size={16} />
+          <div className="section-eyebrow" style={{ color: "var(--blue)" }}>
+            <Rss size={15} />
             Continuous Spec Monitoring
           </div>
-          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, letterSpacing: "-0.03em" }}>Spec Feeds</h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.88rem", marginTop: "4px" }}>
+          <h1 style={{ fontSize: "2rem", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--ink)", margin: 0 }}>
+            Spec Feeds
+          </h1>
+          <p style={{ color: "var(--ink-light)", fontSize: "0.95rem", marginTop: "8px", maxWidth: "800px" }}>
             Connect to APIs.guru and npm RSS feeds for real-time upstream spec change detection.
           </p>
         </div>
-        <button className="btn-primary" onClick={() => setShowAddModal(true)} style={{ fontSize: "0.85rem" }}>
+        <button className="btn-primary" onClick={() => setShowAddModal(true)} style={{ fontSize: "0.88rem", padding: "10px 18px" }}>
           <Plus size={15} />
           Add Feed
         </button>
@@ -172,29 +174,29 @@ export const SpecFeeds: React.FC = () => {
       {/* Stats row */}
       <div
         className="stagger"
-        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}
+        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1.25rem", marginBottom: "2rem" }}
       >
         {[
-          { label: "Active Feeds", value: feeds.filter((f) => f.status !== "error").length, color: "var(--accent-cyan)", icon: Rss },
-          { label: "Changes Detected", value: changesDetected, color: "#fb7185", icon: AlertTriangle },
-          { label: "Providers Tracked", value: feeds.length, color: "#818cf8", icon: Activity },
+          { label: "Active Feeds", value: feeds.filter((f) => f.status !== "error").length, color: "var(--blue)", icon: Rss },
+          { label: "Changes Detected", value: changesDetected, color: "var(--error)", icon: AlertTriangle },
+          { label: "Providers Tracked", value: feeds.length, color: "var(--ink)", icon: Activity },
         ].map((s) => {
           const Icon = s.icon;
           return (
             <div
               key={s.label}
-              className="glass-panel glass-panel-interactive animate-fade-up"
-              style={{ padding: "1.25rem" }}
+              className="card card-interactive animate-fade-up"
+              style={{ padding: "1.5rem" }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ink-light)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   {s.label}
                 </span>
-                <div style={{ padding: "6px", borderRadius: "7px", background: `${s.color}18`, color: s.color }}>
+                <div style={{ padding: "6px", borderRadius: "var(--radius-sm)", background: "var(--frost)", color: s.color, border: "1px solid var(--border)" }}>
                   <Icon size={14} />
                 </div>
               </div>
-              <div style={{ fontSize: "1.9rem", fontWeight: 800, color: s.color, letterSpacing: "-0.03em" }}>
+              <div style={{ fontSize: "2rem", fontWeight: 700, color: s.color, letterSpacing: "-0.03em" }}>
                 {s.value}
               </div>
             </div>
@@ -205,7 +207,7 @@ export const SpecFeeds: React.FC = () => {
       {/* Main grid */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: "1.5rem" }}>
         {/* Feed Cards */}
-        <div style={{ display: "grid", gap: "1rem" }}>
+        <div style={{ display: "grid", gap: "1.25rem" }}>
           {feeds.map((feed) => {
             const Icon = TYPE_ICON[feed.type] || Rss;
             const sc = STATUS_CONFIG[feed.status];
@@ -213,58 +215,58 @@ export const SpecFeeds: React.FC = () => {
             return (
               <div
                 key={feed.id}
-                className="glass-panel animate-fade-up"
+                className="card card-interactive animate-fade-up"
                 style={{
                   padding: "1.5rem",
-                  borderLeft: feed.changeDetected ? "3px solid #fb7185" : "3px solid rgba(255,255,255,0.06)",
-                  transition: "box-shadow var(--transition-base)",
+                  borderLeft: feed.changeDetected ? "4px solid var(--error)" : "4px solid var(--border)",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px", gap: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                     <div
                       style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "10px",
-                        background: "rgba(245,158,11,0.12)",
+                        width: "42px",
+                        height: "42px",
+                        borderRadius: "var(--radius-sm)",
+                        background: "var(--frost)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "var(--accent-amber)",
+                        color: "var(--blue)",
+                        border: "1px solid var(--border)",
                         flexShrink: 0,
                       }}
                     >
-                      <Icon size={18} />
+                      <Icon size={20} />
                     </div>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--text-primary)" }}>
+                      <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--ink)" }}>
                         {feed.name}
                       </div>
                       {feed.provider && (
-                        <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginTop: "2px" }}>
+                        <div style={{ fontSize: "0.82rem", color: "var(--ink-light)", marginTop: "2px" }}>
                           {feed.provider}
                         </div>
                       )}
                     </div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
                     {feed.changeDetected && (
-                      <span className="badge badge-critical" style={{ fontSize: "0.65rem" }}>
-                        <AlertTriangle size={9} /> Change Detected
+                      <span className="badge badge-critical" style={{ fontSize: "0.68rem" }}>
+                        <AlertTriangle size={10} style={{ marginRight: "3px" }} /> Change Detected
                       </span>
                     )}
                     <div
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: "5px",
-                        background: `${sc.dotColor}12`,
-                        border: `1px solid ${sc.dotColor}30`,
+                        gap: "6px",
+                        background: "var(--frost)",
+                        border: "1px solid var(--border)",
                         borderRadius: "var(--radius-full)",
-                        padding: "3px 9px",
-                        fontSize: "0.68rem",
-                        fontWeight: 700,
+                        padding: "3px 10px",
+                        fontSize: "0.72rem",
+                        fontWeight: 600,
                         color: sc.color,
                       }}
                     >
@@ -274,8 +276,6 @@ export const SpecFeeds: React.FC = () => {
                           height: "6px",
                           borderRadius: "50%",
                           background: sc.dotColor,
-                          boxShadow: `0 0 6px ${sc.dotColor}`,
-                          animation: feed.status === "connected" ? "pulse 2s infinite" : "none",
                         }}
                       />
                       {sc.label}
@@ -286,44 +286,44 @@ export const SpecFeeds: React.FC = () => {
                 <div
                   style={{
                     display: "flex",
-                    gap: "1rem",
-                    fontSize: "0.78rem",
-                    color: "var(--text-secondary)",
-                    marginBottom: "10px",
+                    gap: "1.25rem",
+                    fontSize: "0.82rem",
+                    color: "var(--ink-medium)",
+                    marginBottom: "12px",
                     flexWrap: "wrap",
                   }}
                 >
                   <div>
-                    <span style={{ color: "var(--text-muted)" }}>URL: </span>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.72rem" }}>{feed.url}</span>
+                    <span style={{ color: "var(--ink-light)" }}>URL: </span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.76rem" }}>{feed.url}</span>
                   </div>
                   {feed.specVersion && (
                     <div>
-                      <span style={{ color: "var(--text-muted)" }}>Version: </span>
-                      <span style={{ fontWeight: 600, color: feed.changeDetected ? "#fb7185" : "#34d399" }}>
+                      <span style={{ color: "var(--ink-light)" }}>Version: </span>
+                      <span style={{ fontWeight: 600, color: feed.changeDetected ? "var(--error)" : "var(--success)" }}>
                         {feed.specVersion}
                       </span>
                     </div>
                   )}
                 </div>
 
-                <div style={{ display: "flex", gap: "1rem", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "12px" }}>
+                <div style={{ display: "flex", gap: "1.25rem", fontSize: "0.78rem", color: "var(--ink-light)", marginBottom: "14px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <Clock size={11} />
-                    Last fetched: <strong style={{ color: "var(--text-secondary)" }}>{feed.lastFetched || "Never"}</strong>
+                    <Clock size={12} />
+                    Last fetched: <strong style={{ color: "var(--ink-medium)", fontWeight: 600 }}>{feed.lastFetched || "Never"}</strong>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <RefreshCw size={11} />
-                    Next poll: <strong style={{ color: "var(--text-secondary)" }}>{feed.nextPoll || "—"}</strong>
+                    <RefreshCw size={12} />
+                    Next poll: <strong style={{ color: "var(--ink-medium)", fontWeight: 600 }}>{feed.nextPoll || "—"}</strong>
                   </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "8px" }}>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center", borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
                   <button
                     className="btn-secondary"
                     onClick={() => handlePoll(feed.id)}
                     disabled={isPoll}
-                    style={{ fontSize: "0.78rem" }}
+                    style={{ fontSize: "0.78rem", padding: "6px 12px" }}
                   >
                     <RefreshCw size={12} className={isPoll ? "animate-spin" : ""} />
                     {isPoll ? "Polling..." : "Poll Now"}
@@ -333,7 +333,7 @@ export const SpecFeeds: React.FC = () => {
                     target="_blank"
                     rel="noreferrer"
                     className="btn-ghost"
-                    style={{ fontSize: "0.78rem", textDecoration: "none" }}
+                    style={{ fontSize: "0.78rem", textDecoration: "none", padding: "6px 12px" }}
                   >
                     <ExternalLink size={12} />
                     Open Feed
@@ -341,9 +341,9 @@ export const SpecFeeds: React.FC = () => {
                   <button
                     className="btn-ghost"
                     onClick={() => handleDelete(feed.id)}
-                    style={{ marginLeft: "auto", color: "#fb7185", fontSize: "0.78rem" }}
+                    style={{ marginLeft: "auto", color: "var(--error)", fontSize: "0.78rem", padding: "6px 10px" }}
                   >
-                    <Trash2 size={12} />
+                    <Trash2 size={13} />
                   </button>
                 </div>
               </div>
@@ -352,11 +352,11 @@ export const SpecFeeds: React.FC = () => {
         </div>
 
         {/* Event log */}
-        <div className="glass-panel" style={{ padding: "1.75rem", height: "fit-content", position: "sticky", top: "84px" }}>
+        <div className="card" style={{ padding: "1.75rem", height: "fit-content", position: "sticky", top: "84px" }}>
           <h2
-            style={{ fontSize: "1.05rem", fontWeight: 700, marginBottom: "1.25rem", display: "flex", alignItems: "center", gap: "8px" }}
+            style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--ink)", marginBottom: "1.25rem", display: "flex", alignItems: "center", gap: "8px" }}
           >
-            <Activity size={16} color="var(--accent-cyan)" />
+            <Activity size={16} color="var(--blue)" />
             Spec Change Events
           </h2>
           <div className="activity-feed stagger">
@@ -366,24 +366,24 @@ export const SpecFeeds: React.FC = () => {
                 <div key={idx} className="activity-item animate-fade-up">
                   <div
                     className="activity-dot"
-                    style={{ background: ks.dot, boxShadow: `0 0 6px ${ks.dot}` }}
+                    style={{ background: ks.dot }}
                   />
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", gap: "6px", alignItems: "center", marginBottom: "3px" }}>
-                      <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center", marginBottom: "4px" }}>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--ink)" }}>
                         {ev.provider}
                       </span>
-                      <span className={`badge ${ks.badge}`} style={{ fontSize: "0.6rem" }}>
+                      <span className={`badge ${ks.badge}`} style={{ fontSize: "0.65rem" }}>
                         {ev.kind}
                       </span>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", color: "#818cf8" }}>
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.72rem", color: "var(--ink-light)" }}>
                         {ev.version}
                       </span>
                     </div>
-                    <div style={{ fontSize: "0.77rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>
+                    <div style={{ fontSize: "0.8rem", color: "var(--ink-medium)", lineHeight: 1.5 }}>
                       {ev.desc}
                     </div>
-                    <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "3px" }}>
+                    <div style={{ fontSize: "0.72rem", color: "var(--ink-light)", marginTop: "4px" }}>
                       Today at {ev.time}
                     </div>
                   </div>
@@ -398,18 +398,18 @@ export const SpecFeeds: React.FC = () => {
       {showAddModal && (
         <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
           <div
-            className="glass-panel modal-content"
+            className="card modal-content"
             style={{ width: "100%", maxWidth: "500px", padding: "2rem" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ fontSize: "1.25rem", fontWeight: 800, marginBottom: "4px" }}>Add Spec Feed</h3>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
+            <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--ink)", margin: "0 0 6px 0" }}>Add Spec Feed</h3>
+            <p style={{ color: "var(--ink-light)", fontSize: "0.88rem", margin: "0 0 1.5rem 0" }}>
               Connect a new OpenAPI URL, APIs.guru provider, or npm RSS feed for continuous monitoring.
             </p>
 
-            <div style={{ display: "grid", gap: "12px", marginBottom: "1.5rem" }}>
+            <div style={{ display: "grid", gap: "14px", marginBottom: "1.5rem" }}>
               <div>
-                <label style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: "5px" }}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--ink)", display: "block", marginBottom: "6px" }}>
                   Feed Name
                 </label>
                 <input
@@ -420,7 +420,7 @@ export const SpecFeeds: React.FC = () => {
                 />
               </div>
               <div>
-                <label style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: "5px" }}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--ink)", display: "block", marginBottom: "6px" }}>
                   Feed Type
                 </label>
                 <select
@@ -435,7 +435,7 @@ export const SpecFeeds: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: "5px" }}>
+                <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--ink)", display: "block", marginBottom: "6px" }}>
                   URL
                 </label>
                 <input
@@ -447,11 +447,11 @@ export const SpecFeeds: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-              <button className="btn-secondary" onClick={() => setShowAddModal(false)}>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <button className="btn-secondary" onClick={() => setShowAddModal(false)} style={{ padding: "8px 16px" }}>
                 Cancel
               </button>
-              <button className="btn-primary" onClick={handleAdd} disabled={!newFeedUrl || !newFeedName}>
+              <button className="btn-primary" onClick={handleAdd} disabled={!newFeedUrl || !newFeedName} style={{ padding: "8px 16px" }}>
                 <CheckCircle2 size={14} />
                 Add Feed
               </button>
@@ -466,3 +466,4 @@ export const SpecFeeds: React.FC = () => {
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
+

@@ -7,7 +7,6 @@ import {
   ShieldCheck,
   GitPullRequest,
   Sliders,
-  Sparkles,
   Rss,
   Wifi,
   WifiOff,
@@ -54,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   }, [activeTab]);
 
-  // Keyboard shortcuts (⌘ + number)
+  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key >= "1" && e.key <= "8") {
@@ -70,10 +69,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header
       style={{
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        background: "rgba(6, 10, 18, 0.92)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
+        borderBottom: "1px solid var(--border)",
+        background: "rgba(255, 255, 255, 0.85)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
         position: "sticky",
         top: 0,
         zIndex: 50,
@@ -87,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          height: "64px",
+          height: "60px",
           gap: "1.5rem",
         }}
       >
@@ -98,25 +97,24 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <div
             style={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "10px",
-              background: "linear-gradient(135deg, #6366f1, #06b6d4)",
+              width: "34px",
+              height: "34px",
+              borderRadius: "8px",
+              background: "var(--ink)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: "0 0 18px rgba(99,102,241,0.6)",
               flexShrink: 0,
             }}
           >
-            <GitPullRequest size={20} color="#ffffff" />
+            <GitPullRequest size={18} color="#ffffff" />
           </div>
           <div style={{ lineHeight: 1.2 }}>
-            <div style={{ fontSize: "1rem", fontWeight: 800, letterSpacing: "-0.02em", color: "#ffffff" }}>
-              API <span style={{ color: "var(--accent-cyan)" }}>Agent</span>
+            <div style={{ fontSize: "0.9375rem", fontWeight: 800, letterSpacing: "-0.02em", color: "var(--ink)" }}>
+              API <span style={{ color: "var(--blue)" }}>Agent</span>
             </div>
-            <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 500 }}>
-              Self-Maintaining • Autonomous
+            <div style={{ fontSize: "0.6875rem", color: "var(--ink-light)", fontWeight: 500 }}>
+              Self-Maintaining
             </div>
           </div>
         </div>
@@ -132,12 +130,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               position: "absolute",
               bottom: "-1px",
               height: "2px",
-              background: "linear-gradient(90deg, var(--accent-indigo), var(--accent-cyan))",
+              background: "var(--blue)",
               borderRadius: "2px 2px 0 0",
               transition: "left 0.25s cubic-bezier(0.4,0,0.2,1), width 0.25s cubic-bezier(0.4,0,0.2,1)",
               left: indicatorStyle.left,
               width: indicatorStyle.width,
-              boxShadow: "0 0 12px rgba(99,102,241,0.6)",
             }}
           />
 
@@ -154,13 +151,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "6px",
+                    gap: "5px",
                     padding: "6px 12px",
-                    borderRadius: "7px",
-                    fontSize: "0.8rem",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "0.8125rem",
                     fontWeight: isActive ? 600 : 500,
-                    color: isActive ? "#ffffff" : "var(--text-muted)",
-                    background: isActive ? "rgba(99,102,241,0.14)" : "transparent",
+                    color: isActive ? "var(--ink)" : "var(--ink-light)",
+                    background: isActive ? "var(--blue-wash)" : "transparent",
                     border: "1px solid transparent",
                     cursor: "pointer",
                     transition: "all var(--transition-fast)",
@@ -169,13 +166,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
-                      (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
-                      (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                      (e.currentTarget as HTMLElement).style.color = "var(--ink)";
+                      (e.currentTarget as HTMLElement).style.background = "var(--gray-50)";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive) {
-                      (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
+                      (e.currentTarget as HTMLElement).style.color = "var(--ink-light)";
                       (e.currentTarget as HTMLElement).style.background = "transparent";
                     }
                   }}
@@ -184,7 +181,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {tab.label}
                 </button>
                 <div className="tooltip">
-                  {tab.label} <span style={{ opacity: 0.5, fontSize: "0.7rem" }}>⌘{tab.shortcut}</span>
+                  {tab.label} <span style={{ opacity: 0.6, fontSize: "0.68rem" }}>Cmd+{tab.shortcut}</span>
                 </div>
               </div>
             );
@@ -198,7 +195,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={onOpenOnboarding}
             style={{ padding: "7px 14px", fontSize: "0.78rem" }}
           >
-            <Sparkles size={13} />
             <span>Setup Wizard</span>
           </button>
 
@@ -207,22 +203,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "6px",
-              background: realtimeConnected
-                ? "rgba(16,185,129,0.08)"
-                : "rgba(255,255,255,0.04)",
+              gap: "5px",
+              background: realtimeConnected ? "var(--success-wash)" : "var(--gray-50)",
               padding: "5px 10px",
               borderRadius: "var(--radius-full)",
-              border: `1px solid ${realtimeConnected ? "rgba(16,185,129,0.25)" : "rgba(255,255,255,0.08)"}`,
-              fontSize: "0.7rem",
-              color: realtimeConnected ? "#34d399" : "var(--text-muted)",
+              border: `1px solid ${realtimeConnected ? "rgba(16,185,129,0.25)" : "var(--border)"}`,
+              fontSize: "0.6875rem",
+              color: realtimeConnected ? "#059669" : "var(--ink-light)",
               fontWeight: 600,
               transition: "all var(--transition-base)",
             }}
           >
             {realtimeConnected ? (
               <>
-                <span className="pulse-dot" style={{ width: "6px", height: "6px" }} />
+                <span
+                  style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    background: "#10B981",
+                    display: "inline-block",
+                  }}
+                />
                 <Wifi size={11} />
                 <span>Live</span>
               </>

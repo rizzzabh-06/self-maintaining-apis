@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { 
-  FolderGit2, 
-  Plus, 
-  RefreshCw, 
+import {
+  FolderGit2,
+  Plus,
+  RefreshCw,
   ExternalLink,
   Code2
 } from "lucide-react";
-import { 
-  fetchConnectedRepositories, 
-  fetchGitHubRepositories, 
-  connectRepository, 
-  triggerRepositoryScan 
+import {
+  fetchConnectedRepositories,
+  fetchGitHubRepositories,
+  connectRepository,
+  triggerRepositoryScan
 } from "../api/client";
 
 export const Repositories = () => {
@@ -67,14 +67,12 @@ export const Repositories = () => {
     <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "2.5rem 2rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "2rem" }}>
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--accent-indigo)", marginBottom: "4px" }}>
-            <FolderGit2 size={18} />
-            <span style={{ fontSize: "0.8rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Codebase Management
-            </span>
+          <div className="section-eyebrow" style={{ marginBottom: "4px" }}>
+            <FolderGit2 size={16} />
+            Codebase Management
           </div>
-          <h1 style={{ fontSize: "1.8rem", fontWeight: 800 }}>Connected Repositories</h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+          <h1 style={{ fontSize: "1.75rem", fontWeight: 800 }}>Connected Repositories</h1>
+          <p style={{ color: "var(--ink-light)", fontSize: "0.875rem", marginTop: "4px" }}>
             Codebases ingested from GitHub with active AST dependency tracking and continuous API contract maintenance.
           </p>
         </div>
@@ -86,43 +84,43 @@ export const Repositories = () => {
       </div>
 
       {/* Repositories Grid */}
-      <div style={{ display: "grid", gap: "1.2rem" }}>
+      <div style={{ display: "grid", gap: "1rem" }}>
         {loading ? (
-          <div className="glass-panel" style={{ padding: "3rem", textAlign: "center", color: "var(--text-muted)" }}>
+          <div className="card" style={{ padding: "3rem", textAlign: "center", color: "var(--ink-light)" }}>
             Loading repositories from Neon Postgres...
           </div>
         ) : (
           repos.map((r) => {
             const isScanning = scanningId === r.id;
             return (
-              <div key={r.id} className="glass-panel" style={{ padding: "1.8rem" }}>
+              <div key={r.id} className="card" style={{ padding: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                     <div style={{
-                      width: "44px",
-                      height: "44px",
+                      width: "42px",
+                      height: "42px",
                       borderRadius: "10px",
-                      background: "rgba(99, 102, 241, 0.15)",
+                      background: "var(--blue-wash)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "#818cf8",
+                      color: "var(--blue)",
                     }}>
-                      <Code2 size={22} />
+                      <Code2 size={20} />
                     </div>
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <h3 style={{ fontSize: "1.2rem", fontWeight: 800, fontFamily: "var(--font-mono)" }}>
+                        <h3 style={{ fontSize: "1.1rem", fontWeight: 800, fontFamily: "var(--font-mono)" }}>
                           {r.github_repo}
                         </h3>
                         <span className="badge badge-success">Monitored</span>
-                        <span className="badge badge-info" style={{ fontSize: "0.7rem" }}>{r.language}</span>
+                        <span className="badge badge-info" style={{ fontSize: "0.6875rem" }}>{r.language}</span>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "6px", fontSize: "0.82rem", color: "var(--text-secondary)" }}>
-                        <span>Branch: <strong>{r.default_branch}</strong></span>
-                        <span>•</span>
-                        <span>Usages Indexed: <strong style={{ color: "#34d399" }}>{r.usages_count}</strong></span>
-                        <span>•</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "6px", fontSize: "0.8125rem", color: "var(--ink-light)" }}>
+                        <span>Branch: <strong style={{ color: "var(--ink-medium)" }}>{r.default_branch}</strong></span>
+                        <span style={{ color: "var(--gray-300)" }}>&middot;</span>
+                        <span>Usages Indexed: <strong style={{ color: "var(--success)" }}>{r.usages_count}</strong></span>
+                        <span style={{ color: "var(--gray-300)" }}>&middot;</span>
                         <span>Last Scan: {r.last_scanned_at ? new Date(r.last_scanned_at).toLocaleTimeString() : "Pending"}</span>
                       </div>
                     </div>
@@ -156,40 +154,31 @@ export const Repositories = () => {
 
       {/* Add Repository Modal */}
       {showAddModal && (
-        <div style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(5, 8, 16, 0.8)",
-          backdropFilter: "blur(16px)",
-          zIndex: 100,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "2rem",
-        }}>
-          <div className="glass-panel" style={{ width: "100%", maxWidth: "550px", padding: "2rem" }}>
-            <h3 style={{ fontSize: "1.3rem", fontWeight: 800, marginBottom: "0.5rem" }}>
+        <div className="modal-overlay">
+          <div className="card modal-content" style={{ width: "100%", maxWidth: "550px", padding: "2rem" }}>
+            <h3 style={{ fontSize: "1.25rem", fontWeight: 800, marginBottom: "0.5rem" }}>
               Import GitHub Repository
             </h3>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.88rem", marginBottom: "1.5rem" }}>
+            <p style={{ color: "var(--ink-light)", fontSize: "0.875rem", marginBottom: "1.5rem" }}>
               Select a repository accessible to your authorized GitHub App installation.
             </p>
 
-            <div style={{ display: "grid", gap: "10px", marginBottom: "1.8rem" }}>
+            <div style={{ display: "grid", gap: "10px", marginBottom: "1.5rem" }}>
               {availableRepos.map((ar) => (
                 <div
                   key={ar.full_name}
                   onClick={() => setSelectedRepo(ar.full_name)}
                   style={{
-                    background: selectedRepo === ar.full_name ? "rgba(99, 102, 241, 0.15)" : "rgba(255, 255, 255, 0.02)",
-                    border: selectedRepo === ar.full_name ? "1px solid var(--accent-indigo)" : "1px solid var(--border-subtle)",
-                    borderRadius: "8px",
+                    background: selectedRepo === ar.full_name ? "var(--blue-wash-strong)" : "var(--frost)",
+                    border: selectedRepo === ar.full_name ? "1px solid var(--blue)" : "1px solid var(--border)",
+                    borderRadius: "var(--radius-md)",
                     padding: "10px 14px",
                     cursor: "pointer",
+                    transition: "all var(--transition-fast)",
                   }}
                 >
-                  <div style={{ fontWeight: 700, fontFamily: "var(--font-mono)", fontSize: "0.9rem" }}>{ar.full_name}</div>
-                  <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginTop: "2px" }}>{ar.description}</div>
+                  <div style={{ fontWeight: 700, fontFamily: "var(--font-mono)", fontSize: "0.875rem", color: "var(--ink)" }}>{ar.full_name}</div>
+                  <div style={{ fontSize: "0.78rem", color: "var(--ink-light)", marginTop: "2px" }}>{ar.description}</div>
                 </div>
               ))}
             </div>

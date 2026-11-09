@@ -10,6 +10,7 @@ import {
   Clock,
   Terminal,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import { triggerMigration } from "../api/client";
 
@@ -157,27 +158,27 @@ export const Migration: React.FC = () => {
   const allPass = sandboxSteps.every((s) => s.status === "pass");
 
   return (
-    <div style={{ maxWidth: "1500px", margin: "0 auto", padding: "2rem 1.5rem" }}>
+    <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "2.5rem 2rem" }}>
       {/* Header */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-end",
-          marginBottom: "1.75rem",
+          marginBottom: "2rem",
           flexWrap: "wrap",
-          gap: "1rem",
+          gap: "1.25rem",
         }}
       >
         <div className="animate-fade-up">
-          <div className="section-eyebrow" style={{ color: "var(--accent-indigo)" }}>
-            <GitPullRequest size={16} />
+          <div className="section-eyebrow" style={{ color: "var(--blue)" }}>
+            <GitPullRequest size={15} />
             Autonomous Execution & Sandbox
           </div>
-          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, letterSpacing: "-0.03em" }}>
+          <h1 style={{ fontSize: "2rem", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--ink)", margin: 0 }}>
             Migration & Validation Console
           </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.88rem", marginTop: "4px" }}>
+          <p style={{ color: "var(--ink-light)", fontSize: "0.95rem", marginTop: "8px", maxWidth: "800px" }}>
             Generates bounded deterministic patches, validates in isolated sandbox, composes a GitHub Draft PR.
           </p>
         </div>
@@ -186,7 +187,7 @@ export const Migration: React.FC = () => {
           className="btn-primary"
           onClick={handleRunMigration}
           disabled={running}
-          style={{ padding: "11px 22px", fontSize: "0.9rem" }}
+          style={{ padding: "10px 20px", fontSize: "0.9rem" }}
         >
           {running ? (
             <>
@@ -195,7 +196,7 @@ export const Migration: React.FC = () => {
             </>
           ) : (
             <>
-              <Play size={16} fill="currentColor" />
+              <Play size={15} fill="currentColor" />
               <span>Run Autonomous Migration</span>
             </>
           )}
@@ -205,21 +206,22 @@ export const Migration: React.FC = () => {
       {/* Two-column layout: sandbox + terminal */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem", marginBottom: "1.5rem" }}>
         {/* Sandbox Steps */}
-        <div className="glass-panel" style={{ padding: "1.75rem" }}>
+        <div className="card" style={{ padding: "1.75rem" }}>
           <h2
             style={{
               fontSize: "1.05rem",
               fontWeight: 700,
+              color: "var(--ink)",
               marginBottom: "1.25rem",
               display: "flex",
               alignItems: "center",
               gap: "8px",
             }}
           >
-            <ShieldCheck size={18} color="var(--accent-emerald)" />
+            <ShieldCheck size={18} color="var(--success)" />
             Sandbox Pipeline
             {allPass && (
-              <span className="badge badge-success" style={{ marginLeft: "auto", fontSize: "0.65rem" }}>
+              <span className="badge badge-success" style={{ marginLeft: "auto", fontSize: "0.68rem" }}>
                 PASS (100%)
               </span>
             )}
@@ -234,46 +236,47 @@ export const Migration: React.FC = () => {
                   alignItems: "center",
                   gap: "12px",
                   padding: "12px 14px",
-                  borderRadius: "var(--radius-md)",
-                  background: step.status === "pass"
-                    ? "rgba(16,185,129,0.05)"
-                    : step.status === "running"
-                    ? "rgba(99,102,241,0.05)"
-                    : step.status === "fail"
-                    ? "rgba(244,63,94,0.05)"
-                    : "rgba(255,255,255,0.02)",
+                  borderRadius: "var(--radius-sm)",
+                  background:
+                    step.status === "pass"
+                      ? "rgba(15, 157, 88, 0.05)"
+                      : step.status === "running"
+                      ? "rgba(41, 181, 232, 0.06)"
+                      : step.status === "fail"
+                      ? "var(--error-light)"
+                      : "var(--white)",
                   border: `1px solid ${
                     step.status === "pass"
-                      ? "rgba(16,185,129,0.2)"
+                      ? "rgba(15, 157, 88, 0.25)"
                       : step.status === "running"
-                      ? "rgba(99,102,241,0.25)"
+                      ? "rgba(41, 181, 232, 0.35)"
                       : step.status === "fail"
-                      ? "rgba(244,63,94,0.2)"
-                      : "var(--border-subtle)"
+                      ? "var(--error)"
+                      : "var(--border)"
                   }`,
-                  transition: "all var(--transition-base)",
                 }}
               >
-                <div className={step.status === "running" ? "status-ring running" : ""} style={{ flexShrink: 0 }}>
+                <div style={{ flexShrink: 0 }}>
                   {step.status === "pass" ? (
-                    <CheckCircle2 size={22} color="#34d399" />
+                    <CheckCircle2 size={20} color="var(--success)" />
                   ) : step.status === "fail" ? (
-                    <XCircle size={22} color="#fb7185" />
+                    <XCircle size={20} color="var(--error)" />
                   ) : step.status === "running" ? (
-                    <Clock size={20} color="#818cf8" className="animate-spin" />
+                    <Clock size={20} color="var(--blue)" className="animate-spin" />
                   ) : (
                     <div
                       style={{
-                        width: "22px",
-                        height: "22px",
+                        width: "20px",
+                        height: "20px",
                         borderRadius: "50%",
-                        border: "2px solid rgba(255,255,255,0.15)",
+                        border: "1px solid var(--border)",
+                        background: "var(--frost)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "0.7rem",
-                        color: "var(--text-muted)",
-                        fontWeight: 700,
+                        fontSize: "0.72rem",
+                        color: "var(--ink-light)",
+                        fontWeight: 600,
                       }}
                     >
                       {idx + 1}
@@ -281,14 +284,14 @@ export const Migration: React.FC = () => {
                   )}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: "0.87rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                  <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--ink)" }}>
                     {step.name}
                   </div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>{step.desc}</div>
+                  <div style={{ fontSize: "0.78rem", color: "var(--ink-light)" }}>{step.desc}</div>
                 </div>
                 <span
-                  className={`badge ${step.status === "pass" ? "badge-success" : step.status === "running" ? "badge-indigo" : step.status === "fail" ? "badge-critical" : ""}`}
-                  style={{ fontSize: "0.62rem", opacity: step.status === "pending" ? 0.3 : 1 }}
+                  className={`badge ${step.status === "pass" ? "badge-success" : step.status === "running" ? "badge-info" : step.status === "fail" ? "badge-critical" : ""}`}
+                  style={{ fontSize: "0.65rem", opacity: step.status === "pending" ? 0.4 : 1 }}
                 >
                   {step.status === "pending" ? "PENDING" : step.status.toUpperCase()}
                 </span>
@@ -298,27 +301,28 @@ export const Migration: React.FC = () => {
         </div>
 
         {/* Terminal Log */}
-        <div className="glass-panel" style={{ padding: "1.75rem", display: "flex", flexDirection: "column" }}>
+        <div className="card" style={{ padding: "1.75rem", display: "flex", flexDirection: "column" }}>
           <h2
             style={{
               fontSize: "1.05rem",
               fontWeight: 700,
+              color: "var(--ink)",
               marginBottom: "1rem",
               display: "flex",
               alignItems: "center",
               gap: "8px",
             }}
           >
-            <Terminal size={18} color="var(--accent-cyan)" />
+            <Terminal size={18} color="var(--blue)" />
             Sandbox Output
           </h2>
           <div
             ref={termRef}
             style={{
               flex: 1,
-              background: "#020508",
-              border: "1px solid rgba(255,255,255,0.06)",
-              borderRadius: "var(--radius-md)",
+              background: "var(--frost)",
+              border: "1px solid var(--border)",
+              borderRadius: "var(--radius-sm)",
               padding: "14px",
               fontFamily: "var(--font-mono)",
               fontSize: "0.78rem",
@@ -329,7 +333,7 @@ export const Migration: React.FC = () => {
             }}
           >
             {terminalLog.length === 0 ? (
-              <span style={{ color: "var(--text-muted)" }}>
+              <span style={{ color: "var(--ink-light)" }}>
                 {">"} Waiting for migration run...
               </span>
             ) : (
@@ -338,12 +342,13 @@ export const Migration: React.FC = () => {
                   key={i}
                   style={{
                     color: line.startsWith("✓")
-                      ? "#34d399"
+                      ? "var(--success)"
                       : line.startsWith("╔") || line.startsWith("║") || line.startsWith("╚")
-                      ? "#818cf8"
+                      ? "var(--blue)"
                       : line.startsWith("$")
-                      ? "#fbbf24"
-                      : "var(--text-secondary)",
+                      ? "var(--ink)"
+                      : "var(--ink-medium)",
+                    fontWeight: line.startsWith("$") || line.startsWith("╔") || line.startsWith("║") || line.startsWith("╚") ? 600 : 400,
                   }}
                 >
                   {line}
@@ -351,7 +356,7 @@ export const Migration: React.FC = () => {
               ))
             )}
             {running && (
-              <div style={{ color: "var(--accent-cyan)", marginTop: "4px" }}>
+              <div style={{ color: "var(--blue)", marginTop: "4px" }}>
                 <span className="animate-breathe" style={{ display: "inline-block" }}>
                   _
                 </span>
@@ -364,14 +369,14 @@ export const Migration: React.FC = () => {
       {/* Code Diff Viewer */}
       <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: "1.25rem", marginBottom: "1.5rem" }}>
         {/* File selector */}
-        <div className="glass-panel" style={{ padding: "1rem" }}>
+        <div className="card" style={{ padding: "1rem" }}>
           <div
             style={{
-              fontSize: "0.7rem",
+              fontSize: "0.72rem",
               fontWeight: 700,
-              color: "var(--text-muted)",
+              color: "var(--ink-light)",
               textTransform: "uppercase",
-              letterSpacing: "0.06em",
+              letterSpacing: "0.05em",
               marginBottom: "10px",
               padding: "0 6px",
               display: "flex",
@@ -379,7 +384,7 @@ export const Migration: React.FC = () => {
             }}
           >
             <span>Modified Files</span>
-            <span style={{ color: "var(--accent-cyan)" }}>{Object.keys(DEFAULT_DIFFS).length}</span>
+            <span style={{ color: "var(--blue)", fontWeight: 700 }}>{Object.keys(DEFAULT_DIFFS).length}</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
             {Object.keys(DEFAULT_DIFFS).map((f) => {
@@ -396,23 +401,24 @@ export const Migration: React.FC = () => {
                     gap: "8px",
                     padding: "8px 10px",
                     borderRadius: "var(--radius-sm)",
-                    fontSize: "0.76rem",
+                    fontSize: "0.78rem",
                     fontFamily: "var(--font-mono)",
-                    color: isSel ? "#ffffff" : "var(--text-secondary)",
-                    background: isSel ? "rgba(99,102,241,0.15)" : "transparent",
-                    border: isSel ? "1px solid rgba(99,102,241,0.35)" : "1px solid transparent",
+                    color: isSel ? "var(--ink)" : "var(--ink-medium)",
+                    background: isSel ? "var(--frost)" : "transparent",
+                    border: isSel ? "1px solid var(--border)" : "1px solid transparent",
                     textAlign: "left",
                     cursor: "pointer",
                     transition: "all var(--transition-fast)",
                     width: "100%",
+                    fontWeight: isSel ? 600 : 400,
                   }}
                 >
-                  <FileCode2 size={13} color={isSel ? "var(--accent-cyan)" : "currentColor"} />
+                  <FileCode2 size={13} color={isSel ? "var(--blue)" : "currentColor"} />
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                     {f.split("/").pop()}
                   </span>
-                  <span style={{ color: "#34d399", fontSize: "0.65rem", fontWeight: 700 }}>+{addCount}</span>
-                  <span style={{ color: "#fb7185", fontSize: "0.65rem", fontWeight: 700 }}>-{delCount}</span>
+                  <span style={{ color: "var(--success)", fontSize: "0.7rem", fontWeight: 700 }}>+{addCount}</span>
+                  <span style={{ color: "var(--error)", fontSize: "0.7rem", fontWeight: 700 }}>-{delCount}</span>
                 </button>
               );
             })}
@@ -420,7 +426,7 @@ export const Migration: React.FC = () => {
         </div>
 
         {/* Diff content */}
-        <div className="glass-panel" style={{ padding: "1.5rem" }}>
+        <div className="card" style={{ padding: "1.5rem" }}>
           <div
             style={{
               display: "flex",
@@ -428,21 +434,21 @@ export const Migration: React.FC = () => {
               alignItems: "center",
               marginBottom: "1rem",
               paddingBottom: "10px",
-              borderBottom: "1px solid var(--border-subtle)",
+              borderBottom: "1px solid var(--border)",
             }}
           >
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.85rem", fontWeight: 700, color: "var(--accent-cyan)", display: "flex", alignItems: "center", gap: "6px" }}>
-              <ChevronRight size={14} />
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.85rem", fontWeight: 600, color: "var(--ink)", display: "flex", alignItems: "center", gap: "6px" }}>
+              <ChevronRight size={14} color="var(--blue)" />
               {selectedFile}
             </div>
-            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-              <span className="badge badge-success" style={{ fontSize: "0.62rem" }}>Unified Patch</span>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <span className="badge badge-success" style={{ fontSize: "0.68rem" }}>Unified Patch</span>
               {/* View mode toggle */}
               <div
                 style={{
                   display: "flex",
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid var(--border-subtle)",
+                  background: "var(--frost)",
+                  border: "1px solid var(--border)",
                   borderRadius: "var(--radius-sm)",
                   overflow: "hidden",
                 }}
@@ -453,11 +459,11 @@ export const Migration: React.FC = () => {
                     onClick={() => setViewMode(m)}
                     style={{
                       padding: "4px 10px",
-                      fontSize: "0.7rem",
+                      fontSize: "0.72rem",
                       fontWeight: 600,
                       fontFamily: "var(--font-sans)",
-                      background: viewMode === m ? "rgba(99,102,241,0.2)" : "transparent",
-                      color: viewMode === m ? "#ffffff" : "var(--text-muted)",
+                      background: viewMode === m ? "var(--ink)" : "transparent",
+                      color: viewMode === m ? "var(--white)" : "var(--ink-light)",
                       border: "none",
                       cursor: "pointer",
                       transition: "all var(--transition-fast)",
@@ -482,7 +488,7 @@ export const Migration: React.FC = () => {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               <div>
-                <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#fb7185", textTransform: "uppercase", marginBottom: "4px" }}>Before (v1)</div>
+                <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--error)", textTransform: "uppercase", marginBottom: "4px" }}>Before (v1)</div>
                 <div className="diff-container">
                   {splitLeft.map((line, idx) => (
                     <span key={idx} className={classifyLine(line)}>
@@ -492,7 +498,7 @@ export const Migration: React.FC = () => {
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#34d399", textTransform: "uppercase", marginBottom: "4px" }}>After (v2)</div>
+                <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--success)", textTransform: "uppercase", marginBottom: "4px" }}>After (v2)</div>
                 <div className="diff-container">
                   {splitRight.map((line, idx) => (
                     <span key={idx} className={classifyLine(line)}>
@@ -508,25 +514,24 @@ export const Migration: React.FC = () => {
 
       {/* GitHub Draft PR Card */}
       <div
-        className="glass-panel animate-fade-up"
+        className="card animate-fade-up"
         style={{
           padding: "2rem",
-          background: "linear-gradient(135deg, rgba(10,15,28,0.95), rgba(12,28,44,0.7))",
-          border: "1px solid rgba(6,182,212,0.25)",
+          borderLeft: "4px solid var(--blue)",
         }}
       >
         <div
-          style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.2rem", flexWrap: "wrap", gap: "1rem" }}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem", flexWrap: "wrap", gap: "1rem" }}
         >
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
               <span className="badge badge-success">Gated: PASS</span>
-              <span className="badge badge-purple">Draft PR Only</span>
-              <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+              <span className="badge badge-info">Draft PR Only</span>
+              <span style={{ fontSize: "0.8rem", color: "var(--ink-light)", fontFamily: "var(--font-mono)" }}>
                 Branch: api-migration/fakepay-v2-d8f92a
               </span>
             </div>
-            <h3 style={{ fontSize: "1.2rem", fontWeight: 800 }}>
+            <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--ink)", margin: 0 }}>
               fix(api): migrate FakePay integration (fakepay_v1_to_v2)
             </h3>
           </div>
@@ -544,37 +549,40 @@ export const Migration: React.FC = () => {
 
         <div
           style={{
-            background: "rgba(0,0,0,0.45)",
-            border: "1px solid rgba(255,255,255,0.07)",
-            borderRadius: "var(--radius-md)",
+            background: "var(--frost)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius-sm)",
             padding: "1.2rem 1.5rem",
-            fontSize: "0.83rem",
-            color: "var(--text-secondary)",
+            fontSize: "0.85rem",
+            color: "var(--ink-medium)",
             lineHeight: 1.7,
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
-            gap: "4px 2rem",
+            gap: "6px 2rem",
           }}
         >
-          <p><strong style={{ color: "var(--text-primary)" }}>Provider:</strong> FakePay</p>
-          <p><strong style={{ color: "var(--text-primary)" }}>Confidence:</strong> <span style={{ color: "#34d399", fontWeight: 700 }}>98%</span> (Deterministic Recipe)</p>
-          <p><strong style={{ color: "var(--text-primary)" }}>Change:</strong> POST /payment → /payments; currency required</p>
-          <p><strong style={{ color: "var(--text-primary)" }}>Impact:</strong> 5 files, 15 usages</p>
-          <p><strong style={{ color: "var(--text-primary)" }}>Validation:</strong> ✓ Build ✓ Unit Tests ✓ Contract Checks</p>
-          <p><strong style={{ color: "var(--text-primary)" }}>Recipe:</strong> FakePayV1ToV2 (deterministic)</p>
+          <p><strong style={{ color: "var(--ink)" }}>Provider:</strong> FakePay</p>
+          <p><strong style={{ color: "var(--ink)" }}>Confidence:</strong> <span style={{ color: "var(--success)", fontWeight: 700 }}>98%</span> (Deterministic Recipe)</p>
+          <p><strong style={{ color: "var(--ink)" }}>Change:</strong> POST /payment → /payments; currency required</p>
+          <p><strong style={{ color: "var(--ink)" }}>Impact:</strong> 5 files, 15 usages</p>
+          <p><strong style={{ color: "var(--ink)" }}>Validation:</strong> ✓ Build ✓ Unit Tests ✓ Contract Checks</p>
+          <p><strong style={{ color: "var(--ink)" }}>Recipe:</strong> FakePayV1ToV2 (deterministic)</p>
           <div
             style={{
               gridColumn: "1 / -1",
               marginTop: "8px",
-              color: "var(--accent-amber)",
-              fontSize: "0.78rem",
+              paddingTop: "10px",
+              borderTop: "1px solid var(--border)",
+              color: "var(--ink)",
+              fontSize: "0.8rem",
               fontWeight: 600,
               display: "flex",
               alignItems: "center",
-              gap: "6px",
+              gap: "8px",
             }}
           >
-            ⚠️ Human review required. Validated in disposable sandbox — never auto-merged.
+            <AlertTriangle size={15} color="var(--warning)" />
+            Human review required. Validated in disposable sandbox — never auto-merged.
           </div>
         </div>
       </div>
@@ -585,3 +593,4 @@ export const Migration: React.FC = () => {
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
+

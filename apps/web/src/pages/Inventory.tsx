@@ -18,9 +18,9 @@ function getLangBadge(filePath: string) {
 }
 
 function getConfidenceColor(v: number): string {
-  if (v >= 0.9) return "#34d399";
-  if (v >= 0.7) return "#fbbf24";
-  return "#fb7185";
+  if (v >= 0.9) return "var(--success)";
+  if (v >= 0.7) return "var(--warning)";
+  return "var(--error)";
 }
 
 export const Inventory: React.FC = () => {
@@ -97,12 +97,12 @@ export const Inventory: React.FC = () => {
         }}
       >
         <div className="animate-fade-up">
-          <div className="section-eyebrow" style={{ color: "var(--accent-cyan)" }}>
+          <div className="section-eyebrow">
             <Boxes size={16} />
             Codebase Intelligence
           </div>
-          <h1 style={{ fontSize: "1.9rem", fontWeight: 800, letterSpacing: "-0.03em" }}>API Inventory</h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.88rem", marginTop: "4px" }}>
+          <h1 style={{ fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.03em" }}>API Inventory</h1>
+          <p style={{ color: "var(--ink-light)", fontSize: "0.875rem", marginTop: "4px" }}>
             Every external endpoint, SDK dependency, config URL, and symbol indexed across all repositories.
           </p>
         </div>
@@ -113,7 +113,7 @@ export const Inventory: React.FC = () => {
           <div style={{ position: "relative" }}>
             <Search
               size={15}
-              color="var(--text-muted)"
+              color="var(--gray-400)"
               style={{ position: "absolute", left: "11px", top: "50%", transform: "translateY(-50%)" }}
             />
             <input
@@ -122,7 +122,7 @@ export const Inventory: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input-field"
-              style={{ paddingLeft: "34px", width: "240px", fontSize: "0.82rem" }}
+              style={{ paddingLeft: "34px", width: "240px", fontSize: "0.8125rem" }}
             />
           </div>
 
@@ -130,14 +130,14 @@ export const Inventory: React.FC = () => {
           <div style={{ position: "relative" }}>
             <SlidersHorizontal
               size={13}
-              color="var(--text-muted)"
+              color="var(--gray-400)"
               style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)" }}
             />
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
               className="input-field"
-              style={{ paddingLeft: "30px", width: "180px", fontSize: "0.82rem", appearance: "none", cursor: "pointer" }}
+              style={{ paddingLeft: "30px", width: "180px", fontSize: "0.8125rem", appearance: "none", cursor: "pointer" }}
             >
               <option value="all">All Usage Types</option>
               <option value="endpoint_call">Endpoint Calls</option>
@@ -152,8 +152,8 @@ export const Inventory: React.FC = () => {
           <div
             style={{
               display: "flex",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid var(--border-subtle)",
+              background: "var(--frost)",
+              border: "1px solid var(--border)",
               borderRadius: "var(--radius-md)",
               overflow: "hidden",
             }}
@@ -167,12 +167,13 @@ export const Inventory: React.FC = () => {
                   fontSize: "0.78rem",
                   fontWeight: 600,
                   fontFamily: "var(--font-sans)",
-                  background: viewMode === m ? "rgba(99,102,241,0.18)" : "transparent",
-                  color: viewMode === m ? "#ffffff" : "var(--text-muted)",
+                  background: viewMode === m ? "var(--white)" : "transparent",
+                  color: viewMode === m ? "var(--ink)" : "var(--gray-400)",
                   border: "none",
                   cursor: "pointer",
                   transition: "all var(--transition-fast)",
                   textTransform: "capitalize",
+                  boxShadow: viewMode === m ? "var(--shadow-xs)" : "none",
                 }}
               >
                 {m}
@@ -190,21 +191,21 @@ export const Inventory: React.FC = () => {
       {/* Stats row */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "1rem", flexWrap: "wrap" }}>
         {[
-          { label: "Total Usages", value: filteredUsages.length, color: "var(--accent-cyan)" },
-          { label: "Files Covered", value: Object.keys(treeData).length, color: "#818cf8" },
-          { label: "Avg Confidence", value: `${Math.round((filteredUsages.reduce((s, u) => s + (u.confidence || 0), 0) / Math.max(filteredUsages.length, 1)) * 100)}%`, color: "#34d399" },
+          { label: "Total Usages", value: filteredUsages.length, color: "var(--blue)" },
+          { label: "Files Covered", value: Object.keys(treeData).length, color: "var(--blue-dark)" },
+          { label: "Avg Confidence", value: `${Math.round((filteredUsages.reduce((s, u) => s + (u.confidence || 0), 0) / Math.max(filteredUsages.length, 1)) * 100)}%`, color: "var(--success)" },
         ].map((s) => (
           <div
             key={s.label}
             style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid var(--border-subtle)",
+              background: "var(--white)",
+              border: "1px solid var(--border)",
               borderRadius: "var(--radius-md)",
               padding: "8px 14px",
               fontSize: "0.78rem",
             }}
           >
-            <span style={{ color: "var(--text-muted)" }}>{s.label}: </span>
+            <span style={{ color: "var(--ink-light)" }}>{s.label}: </span>
             <span style={{ fontWeight: 700, color: s.color }}>{s.value}</span>
           </div>
         ))}
@@ -212,7 +213,7 @@ export const Inventory: React.FC = () => {
 
       {/* Table View */}
       {viewMode === "table" && (
-        <div className="glass-panel" style={{ overflow: "hidden" }}>
+        <div className="card" style={{ overflow: "hidden" }}>
           <table className="data-table">
             <thead>
               <tr>
@@ -238,7 +239,7 @@ export const Inventory: React.FC = () => {
                 ))
               ) : filteredUsages.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: "3rem", textAlign: "center", color: "var(--text-muted)" }}>
+                  <td colSpan={7} style={{ padding: "3rem", textAlign: "center", color: "var(--ink-light)" }}>
                     No API usages found matching your query.
                   </td>
                 </tr>
@@ -254,19 +255,19 @@ export const Inventory: React.FC = () => {
                         style={{ cursor: "pointer" }}
                         onClick={() => setExpandedRow(isExpanded ? null : idx)}
                       >
-                        <td style={{ fontWeight: 700, color: "var(--accent-cyan)" }}>{u.provider || "—"}</td>
+                        <td style={{ fontWeight: 700, color: "var(--blue)" }}>{u.provider || "--"}</td>
                         <td>
-                          <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: "0.85rem" }}>
-                            {u.endpoint || u.symbol || "—"}
+                          <div style={{ fontWeight: 600, color: "var(--ink)", fontSize: "0.8125rem" }}>
+                            {u.endpoint || u.symbol || "--"}
                           </div>
                         </td>
                         <td>
-                          <span className="badge badge-info" style={{ fontSize: "0.67rem" }}>
+                          <span className="badge badge-info" style={{ fontSize: "0.625rem" }}>
                             {(u.usage_type || "").replace(/_/g, " ")}
                           </span>
                         </td>
                         <td>
-                          <span className={`badge ${lang.cls}`} style={{ fontSize: "0.67rem" }}>
+                          <span className={`badge ${lang.cls}`} style={{ fontSize: "0.625rem" }}>
                             {lang.label}
                           </span>
                         </td>
@@ -276,12 +277,12 @@ export const Inventory: React.FC = () => {
                               display: "flex",
                               alignItems: "center",
                               gap: "5px",
-                              color: "var(--text-secondary)",
+                              color: "var(--ink-light)",
                               fontFamily: "var(--font-mono)",
                               fontSize: "0.75rem",
                             }}
                           >
-                            <MapPin size={11} color="var(--accent-indigo)" />
+                            <MapPin size={11} color="var(--blue)" />
                             <span>
                               {u.file_path}
                               {u.line_number ? `:${u.line_number}` : ""}
@@ -295,8 +296,7 @@ export const Inventory: React.FC = () => {
                                 className="progress-fill"
                                 style={{
                                   width: `${conf * 100}%`,
-                                  background: `linear-gradient(90deg, ${getConfidenceColor(conf)}88, ${getConfidenceColor(conf)})`,
-                                  animation: "none",
+                                  background: getConfidenceColor(conf),
                                 }}
                               />
                             </div>
@@ -307,9 +307,9 @@ export const Inventory: React.FC = () => {
                         </td>
                         <td>
                           {isExpanded ? (
-                            <ChevronUp size={14} color="var(--text-muted)" />
+                            <ChevronUp size={14} color="var(--gray-400)" />
                           ) : (
-                            <ChevronDown size={14} color="var(--text-muted)" />
+                            <ChevronDown size={14} color="var(--gray-400)" />
                           )}
                         </td>
                       </tr>
@@ -334,39 +334,39 @@ export const Inventory: React.FC = () => {
         <div style={{ display: "grid", gap: "1rem" }}>
           {loading
             ? Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="glass-panel skeleton" style={{ height: "80px" }} />
+                <div key={i} className="card skeleton" style={{ height: "80px" }} />
               ))
             : Object.entries(treeData).map(([file, items]) => {
                 const lang = getLangBadge(file);
                 return (
-                  <div key={file} className="glass-panel animate-fade-up" style={{ overflow: "hidden" }}>
+                  <div key={file} className="card animate-fade-up" style={{ overflow: "hidden" }}>
                     {/* File header */}
                     <div
                       style={{
-                        padding: "1rem 1.25rem",
+                        padding: "0.875rem 1.25rem",
                         display: "flex",
                         alignItems: "center",
                         gap: "10px",
-                        borderBottom: "1px solid var(--border-subtle)",
-                        background: "rgba(255,255,255,0.02)",
+                        borderBottom: "1px solid var(--border-light)",
+                        background: "var(--frost-light)",
                       }}
                     >
-                      <span className={`badge ${lang.cls}`} style={{ fontSize: "0.65rem" }}>
+                      <span className={`badge ${lang.cls}`} style={{ fontSize: "0.625rem" }}>
                         {lang.label}
                       </span>
                       <span
                         style={{
                           fontFamily: "var(--font-mono)",
                           fontWeight: 700,
-                          color: "var(--text-primary)",
-                          fontSize: "0.88rem",
+                          color: "var(--ink)",
+                          fontSize: "0.875rem",
                         }}
                       >
                         {file}
                       </span>
                       <span
-                        className="badge badge-indigo"
-                        style={{ marginLeft: "auto", fontSize: "0.65rem" }}
+                        className="badge badge-info"
+                        style={{ marginLeft: "auto", fontSize: "0.625rem" }}
                       >
                         {items.length} usages
                       </span>
@@ -380,39 +380,26 @@ export const Inventory: React.FC = () => {
                           display: "flex",
                           gap: "12px",
                           alignItems: "flex-start",
-                          borderBottom: i < items.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none",
+                          borderBottom: i < items.length - 1 ? "1px solid var(--border-light)" : "none",
                         }}
                       >
-                        <span className="badge badge-info" style={{ fontSize: "0.64rem", flexShrink: 0, marginTop: "1px" }}>
+                        <span className="badge badge-info" style={{ fontSize: "0.5625rem", flexShrink: 0, marginTop: "1px" }}>
                           {(u.usage_type || "").replace(/_/g, " ")}
                         </span>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 600, fontSize: "0.85rem", color: "var(--text-primary)" }}>
-                            {u.endpoint || u.symbol || "—"}
+                          <div style={{ fontWeight: 600, fontSize: "0.8125rem", color: "var(--ink)" }}>
+                            {u.endpoint || u.symbol || "--"}
                           </div>
                           {u.snippet && (
-                            <div
-                              style={{
-                                fontFamily: "var(--font-mono)",
-                                fontSize: "0.75rem",
-                                color: "#93c5fd",
-                                marginTop: "4px",
-                                background: "#040810",
-                                padding: "4px 8px",
-                                borderRadius: "4px",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
+                            <div className="code-snippet-expanded" style={{ marginTop: "4px", maxHeight: "40px", overflow: "hidden" }}>
                               {u.snippet}
                             </div>
                           )}
                         </div>
                         <div
                           style={{
-                            fontSize: "0.72rem",
-                            color: "var(--text-muted)",
+                            fontSize: "0.6875rem",
+                            color: "var(--gray-400)",
                             fontFamily: "var(--font-mono)",
                             whiteSpace: "nowrap",
                           }}

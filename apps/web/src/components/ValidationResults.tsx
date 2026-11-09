@@ -42,24 +42,23 @@ const CollapsibleSection: React.FC<SectionProps> = ({ title, isOpen, onToggle, s
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
-          padding: '0.75rem',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-md)',
-          color: 'var(--text-primary)',
-          fontSize: '0.85rem',
+          padding: '0.75rem 1rem',
+          background: 'var(--frost)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)',
+          color: 'var(--ink)',
+          fontSize: '0.88rem',
           fontWeight: 600,
           cursor: 'pointer',
           transition: 'all var(--transition-fast)',
         }}
-        className="glass-panel-interactive"
       >
         {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         <span style={{ flex: 1, textAlign: 'left' }}>{title}</span>
         {success ? (
-          <CheckCircle2 size={16} color="var(--accent-emerald)" />
+          <CheckCircle2 size={16} color="var(--success)" />
         ) : (
-          <XCircle size={16} color="var(--accent-rose)" />
+          <XCircle size={16} color="var(--error)" />
         )}
       </button>
       
@@ -69,9 +68,9 @@ const CollapsibleSection: React.FC<SectionProps> = ({ title, isOpen, onToggle, s
           style={{
             marginTop: '0.5rem',
             padding: '1rem',
-            background: 'rgba(4, 8, 16, 0.6)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-md)',
+            background: 'var(--white)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)',
           }}
         >
           {children}
@@ -94,8 +93,8 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({ validation
 
   if (!validationData) {
     return (
-      <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center' }}>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+      <div className="card" style={{ padding: '2rem', textAlign: 'center' }}>
+        <p style={{ color: 'var(--ink-light)', fontSize: '0.875rem' }}>
           No validation data available
         </p>
       </div>
@@ -132,8 +131,8 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({ validation
   };
 
   return (
-    <div className="glass-panel" style={{ padding: '1.5rem' }}>
-      <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '1.25rem', color: 'var(--text-primary)' }}>
+    <div className="card" style={{ padding: '1.5rem' }}>
+      <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '1.25rem', color: 'var(--ink)' }}>
         Validation Results
       </h3>
 
@@ -147,8 +146,8 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({ validation
           <pre
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: '0.75rem',
-              color: validationData.build_logs.success ? 'var(--accent-emerald)' : 'var(--accent-rose)',
+              fontSize: '0.78rem',
+              color: validationData.build_logs.success ? 'var(--success)' : 'var(--error)',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
               margin: 0,
@@ -170,37 +169,37 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({ validation
             <div
               style={{
                 flex: 1,
-                padding: '0.75rem',
-                background: 'rgba(16, 185, 129, 0.1)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
+                padding: '0.75rem 1rem',
+                background: 'rgba(15, 157, 88, 0.06)',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid rgba(15, 157, 88, 0.25)',
               }}
             >
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-emerald)' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>
                 {validationData.test_results.passed}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Passed</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--ink-light)' }}>Passed</div>
             </div>
             <div
               style={{
                 flex: 1,
-                padding: '0.75rem',
-                background: 'rgba(244, 63, 94, 0.1)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid rgba(244, 63, 94, 0.3)',
+                padding: '0.75rem 1rem',
+                background: 'var(--error-light)',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--error)',
               }}
             >
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-rose)' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--error)' }}>
                 {validationData.test_results.failed}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Failed</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--ink-light)' }}>Failed</div>
             </div>
           </div>
           <pre
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: '0.75rem',
-              color: 'var(--text-secondary)',
+              fontSize: '0.78rem',
+              color: 'var(--ink-medium)',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
               margin: 0,
@@ -219,7 +218,7 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({ validation
           success={validationData.contract_checks.violations.length === 0}
         >
           {validationData.contract_checks.violations.length === 0 ? (
-            <p style={{ fontSize: '0.8rem', color: 'var(--accent-emerald)' }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--success)', margin: 0 }}>
               No contract violations found
             </p>
           ) : (
@@ -228,11 +227,11 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({ validation
                 <div key={index}>
                   <div
                     className="badge badge-critical"
-                    style={{ marginBottom: '0.5rem', fontSize: '0.65rem' }}
+                    style={{ marginBottom: '0.5rem', fontSize: '0.68rem' }}
                   >
                     {violation.type}
                   </div>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--ink-medium)', marginBottom: '0.5rem' }}>
                     {violation.message}
                   </p>
                   {violation.diff && (
@@ -249,3 +248,4 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({ validation
     </div>
   );
 };
+

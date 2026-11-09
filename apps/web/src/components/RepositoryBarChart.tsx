@@ -8,38 +8,40 @@ interface RepositoryBarChartProps {
 export const RepositoryBarChart: React.FC<RepositoryBarChartProps> = ({ data, height = 300 }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center' }}>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No data available</p>
+      <div className="card" style={{ padding: '2rem', textAlign: 'center' }}>
+        <p style={{ color: 'var(--ink-light)', fontSize: '0.875rem' }}>No data available</p>
       </div>
     );
   }
 
   return (
-    <div className="glass-panel" style={{ padding: '1.5rem' }}>
+    <div className="card" style={{ padding: '1.5rem' }}>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
             dataKey="repo"
-            stroke="var(--text-muted)"
+            stroke="var(--ink-light)"
             style={{ fontSize: '0.75rem' }}
           />
           <YAxis
-            stroke="var(--text-muted)"
+            stroke="var(--ink-light)"
             style={{ fontSize: '0.75rem' }}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: 'rgba(13, 21, 38, 0.95)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '8px',
+              backgroundColor: 'var(--white)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
               fontSize: '0.8rem',
+              color: 'var(--ink)',
+              boxShadow: 'var(--shadow-md)',
             }}
-            labelStyle={{ color: 'var(--text-primary)' }}
+            labelStyle={{ color: 'var(--ink)', fontWeight: 600 }}
           />
           <Bar
             dataKey="count"
-            fill="var(--accent-indigo)"
+            fill="var(--blue)"
             radius={[4, 4, 0, 0]}
           />
         </BarChart>
@@ -47,3 +49,4 @@ export const RepositoryBarChart: React.FC<RepositoryBarChartProps> = ({ data, he
     </div>
   );
 };
+

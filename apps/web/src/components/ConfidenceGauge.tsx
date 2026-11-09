@@ -13,26 +13,16 @@ export const ConfidenceGauge: React.FC<ConfidenceGaugeProps> = ({ value, size = 
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (clampedValue / 100) * circumference;
 
-  // Gradient colors from emerald to cyan - use stable ID based on props
-  const gradientId = `gauge-gradient-${size}-${clampedValue}`;
-
   return (
     <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-        <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--accent-emerald)" />
-            <stop offset="100%" stopColor="var(--accent-cyan)" />
-          </linearGradient>
-        </defs>
-        
         {/* Background circle */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255, 255, 255, 0.06)"
+          stroke="var(--border)"
           strokeWidth={strokeWidth}
         />
         
@@ -42,7 +32,7 @@ export const ConfidenceGauge: React.FC<ConfidenceGaugeProps> = ({ value, size = 
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={`url(#${gradientId})`}
+          stroke="var(--blue)"
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
@@ -60,8 +50,8 @@ export const ConfidenceGauge: React.FC<ConfidenceGaugeProps> = ({ value, size = 
           dominantBaseline="middle"
           style={{
             fontSize: `${size / 4}px`,
-            fontWeight: 800,
-            fill: 'var(--text-primary)',
+            fontWeight: 700,
+            fill: 'var(--ink)',
             transform: 'rotate(90deg)',
             transformOrigin: 'center',
           }}
@@ -73,9 +63,9 @@ export const ConfidenceGauge: React.FC<ConfidenceGaugeProps> = ({ value, size = 
       {label && (
         <span
           style={{
-            fontSize: '0.75rem',
+            fontSize: '0.78rem',
             fontWeight: 600,
-            color: 'var(--text-secondary)',
+            color: 'var(--ink-light)',
             textAlign: 'center',
           }}
         >
@@ -85,3 +75,4 @@ export const ConfidenceGauge: React.FC<ConfidenceGaugeProps> = ({ value, size = 
     </div>
   );
 };
+

@@ -78,28 +78,28 @@ export const LivePipelineMonitor: React.FC<LivePipelineMonitorProps> = ({ migrat
   const getStatusIcon = (status: PipelineStep['status']) => {
     switch (status) {
       case 'complete':
-        return <CheckCircle2 size={16} color="var(--accent-emerald)" />;
+        return <CheckCircle2 size={16} color="var(--success)" />;
       case 'running':
-        return <Loader2 size={16} color="var(--accent-cyan)" className="animate-spin" />;
+        return <Loader2 size={16} color="var(--blue)" className="animate-spin" />;
       case 'failed':
-        return <AlertCircle size={16} color="var(--accent-rose)" />;
+        return <AlertCircle size={16} color="var(--error)" />;
       default:
-        return <Clock size={16} color="var(--text-muted)" />;
+        return <Clock size={16} color="var(--ink-light)" />;
     }
   };
 
   return (
-    <div className="glass-panel" style={{ padding: '1.5rem' }}>
+    <div className="card" style={{ padding: '1.5rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+        <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
           Pipeline Progress
         </h3>
         {!isComplete ? (
-          <span className="badge badge-info" style={{ fontSize: '0.65rem' }}>
+          <span className="badge badge-info" style={{ fontSize: '0.68rem' }}>
             Running
           </span>
         ) : (
-          <span className="badge badge-success" style={{ fontSize: '0.65rem' }}>
+          <span className="badge badge-success" style={{ fontSize: '0.68rem' }}>
             Complete
           </span>
         )}
@@ -114,25 +114,25 @@ export const LivePipelineMonitor: React.FC<LivePipelineMonitorProps> = ({ migrat
               display: 'flex',
               alignItems: 'center',
               gap: '0.75rem',
-              padding: '0.75rem',
-              background: 'rgba(255, 255, 255, 0.02)',
-              borderRadius: 'var(--radius-md)',
+              padding: '0.75rem 1rem',
+              background: 'var(--frost)',
+              borderRadius: 'var(--radius-sm)',
               border: `1px solid ${
                 step.status === 'running'
-                  ? 'rgba(6, 182, 212, 0.3)'
+                  ? 'rgba(41, 181, 232, 0.4)'
                   : step.status === 'complete'
-                  ? 'rgba(16, 185, 129, 0.3)'
-                  : 'var(--border-subtle)'
+                  ? 'rgba(15, 157, 88, 0.3)'
+                  : 'var(--border)'
               }`,
             }}
           >
             <div style={{ flexShrink: 0 }}>{getStatusIcon(step.status)}</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--ink)' }}>
                 {step.name}
               </div>
               {step.timestamp && (
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--ink-light)', marginTop: '2px' }}>
                   {step.timestamp}
                 </div>
               )}
@@ -145,17 +145,17 @@ export const LivePipelineMonitor: React.FC<LivePipelineMonitorProps> = ({ migrat
         style={{
           marginTop: '1rem',
           paddingTop: '1rem',
-          borderTop: '1px solid var(--border-subtle)',
+          borderTop: '1px solid var(--border)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
       >
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+        <div style={{ fontSize: '0.75rem', color: 'var(--ink-light)' }}>
           ETA: ~2 min
         </div>
         {retryCount > 0 && (
-          <div style={{ fontSize: '0.75rem', color: 'var(--accent-amber)' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 600 }}>
             Retries: {retryCount}
           </div>
         )}
@@ -163,3 +163,4 @@ export const LivePipelineMonitor: React.FC<LivePipelineMonitorProps> = ({ migrat
     </div>
   );
 };
+

@@ -22,7 +22,7 @@ export function App() {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--frost)" }}>
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -53,12 +53,12 @@ export function App() {
 
       <footer
         style={{
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          padding: "1.25rem 2rem",
+          borderTop: "1px solid var(--border)",
+          padding: "1rem 2rem",
           textAlign: "center",
-          color: "var(--text-muted)",
+          color: "var(--ink-light)",
           fontSize: "0.75rem",
-          background: "rgba(6,10,18,0.95)",
+          background: "var(--white)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -70,15 +70,14 @@ export function App() {
             width: "6px",
             height: "6px",
             borderRadius: "50%",
-            background: realtimeConnected ? "#34d399" : "#64748b",
-            boxShadow: realtimeConnected ? "0 0 8px #34d399" : "none",
+            background: realtimeConnected ? "var(--success)" : "var(--gray-300)",
             display: "inline-block",
             flexShrink: 0,
           }}
         />
-        Self-Maintaining API Agent &nbsp;•&nbsp;{" "}
-        <strong style={{ color: "#34d399" }}>Neon Lakebase Postgres</strong>
-        &nbsp;•&nbsp; Gemini LLM &nbsp;•&nbsp; Tree-sitter AST &nbsp;•&nbsp; Strict Draft PR Invariant
+        Self-Maintaining API Agent &nbsp;&middot;&nbsp;{" "}
+        <strong style={{ color: "var(--ink-medium)" }}>Neon Lakebase Postgres</strong>
+        &nbsp;&middot;&nbsp; Gemini LLM &nbsp;&middot;&nbsp; Tree-sitter AST &nbsp;&middot;&nbsp; Strict Draft PR Invariant
       </footer>
     </div>
   );

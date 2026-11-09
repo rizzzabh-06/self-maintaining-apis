@@ -8,14 +8,14 @@ interface SuccessRatePieChartProps {
 export const SuccessRatePieChart: React.FC<SuccessRatePieChartProps> = ({ data, height = 260 }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center' }}>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No data available</p>
+      <div className="card" style={{ padding: '2rem', textAlign: 'center' }}>
+        <p style={{ color: 'var(--ink-light)', fontSize: '0.875rem' }}>No data available</p>
       </div>
     );
   }
 
   return (
-    <div className="glass-panel" style={{ padding: '1.5rem' }}>
+    <div className="card" style={{ padding: '1.5rem' }}>
       <ResponsiveContainer width="100%" height={height}>
         <PieChart>
           <Pie
@@ -25,7 +25,7 @@ export const SuccessRatePieChart: React.FC<SuccessRatePieChartProps> = ({ data, 
             labelLine={false}
             label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
             outerRadius={80}
-            fill="#8884d8"
+            fill="#29B5E8"
             dataKey="value"
           >
             {data.map((entry, index) => (
@@ -34,16 +34,18 @@ export const SuccessRatePieChart: React.FC<SuccessRatePieChartProps> = ({ data, 
           </Pie>
           <Tooltip
             contentStyle={{
-              backgroundColor: 'rgba(13, 21, 38, 0.95)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '8px',
+              backgroundColor: 'var(--white)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
               fontSize: '0.8rem',
+              color: 'var(--ink)',
+              boxShadow: 'var(--shadow-md)',
             }}
           />
           <Legend
             wrapperStyle={{
-              fontSize: '0.75rem',
-              color: 'var(--text-secondary)',
+              fontSize: '0.78rem',
+              color: 'var(--ink-light)',
             }}
           />
         </PieChart>
@@ -51,3 +53,4 @@ export const SuccessRatePieChart: React.FC<SuccessRatePieChartProps> = ({ data, 
     </div>
   );
 };
+

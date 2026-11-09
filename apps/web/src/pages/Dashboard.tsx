@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
-  Sparkles,
   Terminal,
   FolderGit2,
   GitPullRequest,
@@ -20,19 +19,19 @@ interface DashboardProps {
 }
 
 const PIPELINE_STEPS = [
-  { label: "Provider Webhook", desc: "FakePay v2 released", icon: Zap, color: "#a855f7", status: "Triggered" },
-  { label: "Change Engine", desc: "AST spec diff", icon: Activity, color: "#06b6d4", status: "3 Breaking" },
-  { label: "Repo Scanner", desc: "4-tier AST discovery", icon: Terminal, color: "#6366f1", status: "Indexed" },
-  { label: "Impact Engine", desc: "4 files affected", icon: AlertTriangle, color: "#f59e0b", status: "High Risk" },
-  { label: "Migration Planner", desc: "Deterministic recipe", icon: TrendingUp, color: "#10b981", status: "98% Conf" },
-  { label: "Isolated Sandbox", desc: "Build + unit tests", icon: CheckCircle2, color: "#34d399", status: "PASS ✓" },
-  { label: "GitHub Draft PR", desc: "Human review gated", icon: GitPullRequest, color: "#818cf8", status: "Ready" },
+  { label: "Provider Webhook", desc: "FakePay v2 released", icon: Zap, status: "Triggered" },
+  { label: "Change Engine", desc: "AST spec diff", icon: Activity, status: "3 Breaking" },
+  { label: "Repo Scanner", desc: "4-tier AST discovery", icon: Terminal, status: "Indexed" },
+  { label: "Impact Engine", desc: "4 files affected", icon: AlertTriangle, status: "High Risk" },
+  { label: "Migration Planner", desc: "Deterministic recipe", icon: TrendingUp, status: "98% Conf" },
+  { label: "Isolated Sandbox", desc: "Build + unit tests", icon: CheckCircle2, status: "PASS" },
+  { label: "GitHub Draft PR", desc: "Human review gated", icon: GitPullRequest, status: "Ready" },
 ];
 
 const LANG_BREAKDOWN = [
-  { lang: "TypeScript", pct: 68, cls: "badge-ts", barColor: "#60a5fa" },
-  { lang: "Python", pct: 22, cls: "badge-py", barColor: "#fbbf24" },
-  { lang: "Go", pct: 10, cls: "badge-go", barColor: "#67e8f9" },
+  { lang: "TypeScript", pct: 68, barColor: "var(--blue)" },
+  { lang: "Python", pct: 22, barColor: "var(--warning)" },
+  { lang: "Go", pct: 10, barColor: "var(--success)" },
 ];
 
 type ActivityItem = {
@@ -43,22 +42,22 @@ type ActivityItem = {
 
 const MOCK_ACTIVITY: ActivityItem[] = [
   { time: "12:41", event: "FakePay v2.0.0 spec fetched via APIs.guru feed", kind: "info" },
-  { time: "12:40", event: "Migration validated — PASS (100%) in isolated sandbox", kind: "success" },
+  { time: "12:40", event: "Migration validated -- PASS (100%) in isolated sandbox", kind: "success" },
   { time: "12:39", event: "3 breaking changes detected in OpenAPI diff", kind: "warning" },
-  { time: "12:38", event: "TypeScript AST scan complete — 15 usages indexed", kind: "success" },
+  { time: "12:38", event: "TypeScript AST scan complete -- 15 usages indexed", kind: "success" },
   { time: "12:35", event: "demo-checkout repository connected", kind: "info" },
 ];
 
 const kindDot: Record<ActivityItem["kind"], string> = {
-  success: "#34d399",
-  warning: "#fbbf24",
-  info: "#818cf8",
-  error: "#fb7185",
+  success: "var(--success)",
+  warning: "var(--warning)",
+  info: "var(--blue)",
+  error: "var(--error)",
 };
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [stats, setStats] = useState({ repos: 1, providers: 1, usages: 15, changes: 3, loading: true });
-  const [activePipelineStep, setActivePipelineStep] = useState(6); // all done by default
+  const [activePipelineStep, setActivePipelineStep] = useState(6);
   const [mounted, setMounted] = useState(false);
 
   const load = useCallback(async () => {
@@ -92,17 +91,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       value: stats.repos,
       sub: "Active: demo-checkout (TypeScript)",
       icon: FolderGit2,
-      iconBg: "rgba(99,102,241,0.15)",
-      iconColor: "#818cf8",
+      iconColor: "var(--blue)",
       tab: "repositories",
     },
     {
       label: "External Providers",
       value: stats.providers,
-      sub: "FakePay v1.0.0 → v2.0.0 detected",
+      sub: "FakePay v1.0.0 to v2.0.0 detected",
       icon: Boxes,
-      iconBg: "rgba(6,182,212,0.15)",
-      iconColor: "#22d3ee",
+      iconColor: "var(--blue)",
       tab: "inventory",
     },
     {
@@ -110,18 +107,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       value: stats.changes,
       sub: "Endpoint renames + required fields",
       icon: AlertTriangle,
-      iconBg: "rgba(244,63,94,0.15)",
-      iconColor: "#fb7185",
+      iconColor: "var(--error)",
       tab: "changes",
-      valueColor: "#fb7185",
+      valueColor: "var(--error)",
     },
     {
       label: "Indexed Usages",
       value: stats.usages,
       sub: "Exact symbols & line numbers mapped",
       icon: CheckCircle2,
-      iconBg: "rgba(16,185,129,0.15)",
-      iconColor: "#34d399",
+      iconColor: "var(--success)",
       tab: "inventory",
     },
   ];
@@ -131,99 +126,44 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
       {/* Hero */}
       <div
-        className="glass-panel animate-fade-up"
+        className="card animate-fade-up"
         style={{
           padding: "2.5rem",
           marginBottom: "1.5rem",
           position: "relative",
           overflow: "hidden",
-          background: "linear-gradient(135deg, rgba(10,15,30,0.95), rgba(25,20,60,0.7))",
-          border: "1px solid rgba(99,102,241,0.2)",
+          background: "var(--white)",
         }}
       >
-        {/* Decorative blobs */}
-        <div
-          style={{
-            position: "absolute",
-            top: "-60px",
-            right: "-40px",
-            width: "280px",
-            height: "280px",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "-40px",
-            left: "30%",
-            width: "200px",
-            height: "200px",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
-
         <div style={{ maxWidth: "680px", position: "relative" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "7px",
-              background: "rgba(99,102,241,0.12)",
-              padding: "4px 12px",
-              borderRadius: "var(--radius-full)",
-              border: "1px solid rgba(99,102,241,0.28)",
-              marginBottom: "1rem",
-            }}
-          >
-            <Sparkles size={12} color="var(--accent-cyan)" />
-            <span
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                color: "var(--accent-cyan)",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-              }}
-            >
-              Autonomous Code Maintenance Engine
-            </span>
+          <div className="section-eyebrow" style={{ marginBottom: "0.75rem" }}>
+            Autonomous Code Maintenance Engine
           </div>
 
           <h1
             style={{
-              fontSize: "2.4rem",
+              fontSize: "2.25rem",
               fontWeight: 800,
-              letterSpacing: "-0.035em",
+              letterSpacing: "-0.03em",
               marginBottom: "0.75rem",
-              lineHeight: 1.18,
+              lineHeight: 1.15,
+              color: "var(--ink)",
             }}
           >
             Detects Breaking APIs.
             <br />
-            <span
-              style={{
-                background: "linear-gradient(to right, #38bdf8, #818cf8, #c084fc)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundSize: "200% auto",
-                animation: "gradientShift 5s ease infinite",
-              }}
-            >
+            <span style={{ color: "var(--blue)" }}>
               Rewrites, Validates & PRs.
             </span>
           </h1>
 
           <p
             style={{
-              color: "var(--text-secondary)",
-              fontSize: "0.95rem",
-              marginBottom: "1.75rem",
+              color: "var(--ink-light)",
+              fontSize: "0.9375rem",
+              marginBottom: "1.5rem",
               lineHeight: 1.65,
+              maxWidth: "580px",
             }}
           >
             Deterministic-first transformation engine backed by Tree-sitter AST analysis, isolated sandbox
@@ -262,8 +202,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           return (
             <div
               key={card.label}
-              className="glass-panel glass-panel-interactive animate-fade-up"
-              style={{ padding: "1.4rem", cursor: "pointer" }}
+              className="card card-interactive animate-fade-up"
+              style={{ padding: "1.25rem" }}
               onClick={() => onNavigate(card.tab)}
             >
               <div
@@ -276,9 +216,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               >
                 <span
                   style={{
-                    fontSize: "0.72rem",
+                    fontSize: "0.6875rem",
                     fontWeight: 700,
-                    color: "var(--text-muted)",
+                    color: "var(--ink-light)",
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
                   }}
@@ -287,9 +227,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 </span>
                 <div
                   style={{
-                    padding: "7px",
-                    borderRadius: "8px",
-                    background: card.iconBg,
+                    padding: "6px",
+                    borderRadius: "var(--radius-md)",
+                    background: "var(--blue-wash)",
                     color: card.iconColor,
                   }}
                 >
@@ -298,21 +238,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </div>
               <div
                 style={{
-                  fontSize: "2.1rem",
+                  fontSize: "2rem",
                   fontWeight: 800,
                   letterSpacing: "-0.03em",
-                  color: card.valueColor || "var(--text-primary)",
+                  color: card.valueColor || "var(--ink)",
                   lineHeight: 1,
-                  marginBottom: "6px",
+                  marginBottom: "4px",
                 }}
               >
                 {stats.loading ? (
-                  <div className="skeleton" style={{ width: "40px", height: "32px", display: "inline-block" }} />
+                  <div className="skeleton" style={{ width: "40px", height: "28px", display: "inline-block" }} />
                 ) : (
                   card.value
                 )}
               </div>
-              <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>{card.sub}</div>
+              <div style={{ fontSize: "0.75rem", color: "var(--ink-light)" }}>{card.sub}</div>
             </div>
           );
         })}
@@ -322,22 +262,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "1.5rem", marginBottom: "1.5rem" }}>
 
         {/* Pipeline Timeline */}
-        <div className="glass-panel" style={{ padding: "1.75rem" }}>
+        <div className="card" style={{ padding: "1.75rem" }}>
           <h2
             style={{
-              fontSize: "1.05rem",
+              fontSize: "1rem",
               fontWeight: 700,
               marginBottom: "1.5rem",
               display: "flex",
               alignItems: "center",
               gap: "8px",
+              color: "var(--ink)",
             }}
           >
-            <Terminal size={18} color="var(--accent-indigo)" />
+            <Terminal size={18} color="var(--blue)" />
             Autonomous Pipeline
             <span
               className="badge badge-success"
-              style={{ marginLeft: "auto", fontSize: "0.65rem" }}
+              style={{ marginLeft: "auto", fontSize: "0.625rem" }}
             >
               PASS (100%)
             </span>
@@ -365,17 +306,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         left: "calc(50% + 18px)",
                         width: "calc(100% - 36px)",
                         height: "2px",
-                        background: isComplete
-                          ? "linear-gradient(90deg, rgba(16,185,129,0.8), rgba(16,185,129,0.3))"
-                          : "rgba(255,255,255,0.06)",
-                        transition: "background 0.5s ease",
+                        background: isComplete ? "var(--blue)" : "var(--border)",
+                        transition: "background 0.3s ease",
                         zIndex: 0,
+                        opacity: isComplete ? 0.5 : 1,
                       }}
                     />
                   )}
 
                   <div
-                    className="pipeline-step-dot"
                     style={{
                       width: "36px",
                       height: "36px",
@@ -383,27 +322,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      border: `2px solid ${isComplete ? step.color : "rgba(255,255,255,0.1)"}`,
-                      background: isComplete ? `${step.color}22` : "rgba(255,255,255,0.03)",
-                      boxShadow: isActive ? `0 0 16px ${step.color}55` : "none",
+                      border: `2px solid ${isComplete ? "var(--blue)" : "var(--border)"}`,
+                      background: isComplete ? "var(--blue-wash)" : "var(--white)",
+                      boxShadow: isActive ? "var(--shadow-focus)" : "none",
                       zIndex: 1,
-                      transition: "all 0.25s ease",
+                      transition: "all 0.2s ease",
                     }}
                   >
-                    <Icon size={16} color={isComplete ? step.color : "var(--text-muted)"} />
+                    <Icon size={16} color={isComplete ? "var(--blue)" : "var(--gray-400)"} />
                   </div>
-                  <div
-                    style={{
-                      marginTop: "8px",
-                      textAlign: "center",
-                      padding: "0 4px",
-                    }}
-                  >
+                  <div style={{ marginTop: "8px", textAlign: "center", padding: "0 4px" }}>
                     <div
                       style={{
-                        fontSize: "0.7rem",
+                        fontSize: "0.6875rem",
                         fontWeight: 700,
-                        color: isComplete ? "var(--text-primary)" : "var(--text-muted)",
+                        color: isComplete ? "var(--ink)" : "var(--gray-400)",
                         marginBottom: "2px",
                         transition: "color 0.2s",
                       }}
@@ -413,7 +346,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                     <span
                       className="badge badge-success"
                       style={{
-                        fontSize: "0.6rem",
+                        fontSize: "0.5625rem",
                         opacity: isComplete ? 1 : 0.35,
                         transition: "opacity 0.2s",
                       }}
@@ -427,12 +360,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           </div>
 
           {/* Language Breakdown */}
-          <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid var(--border-subtle)" }}>
+          <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid var(--border-light)" }}>
             <div
               style={{
-                fontSize: "0.75rem",
+                fontSize: "0.6875rem",
                 fontWeight: 700,
-                color: "var(--text-muted)",
+                color: "var(--ink-light)",
                 textTransform: "uppercase",
                 letterSpacing: "0.06em",
                 marginBottom: "1rem",
@@ -444,8 +377,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               {LANG_BREAKDOWN.map((l) => (
                 <div key={l.lang} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   <span
-                    className={`badge ${l.cls}`}
-                    style={{ fontSize: "0.65rem", minWidth: "80px", justifyContent: "center" }}
+                    style={{
+                      fontSize: "0.6875rem",
+                      fontWeight: 600,
+                      minWidth: "80px",
+                      color: "var(--ink-medium)",
+                    }}
                   >
                     {l.lang}
                   </span>
@@ -454,12 +391,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                       className="chart-bar-fill"
                       style={{
                         width: mounted ? `${l.pct}%` : "0%",
-                        background: `linear-gradient(90deg, ${l.barColor}88, ${l.barColor})`,
+                        background: l.barColor,
                       }}
                     />
                   </div>
                   <span
-                    style={{ fontSize: "0.75rem", fontWeight: 700, color: l.barColor, minWidth: "32px" }}
+                    style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--ink-medium)", minWidth: "32px" }}
                   >
                     {l.pct}%
                   </span>
@@ -470,18 +407,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         </div>
 
         {/* Activity Feed */}
-        <div className="glass-panel" style={{ padding: "1.75rem" }}>
+        <div className="card" style={{ padding: "1.75rem" }}>
           <h2
             style={{
-              fontSize: "1.05rem",
+              fontSize: "1rem",
               fontWeight: 700,
               marginBottom: "1.25rem",
               display: "flex",
               alignItems: "center",
               gap: "8px",
+              color: "var(--ink)",
             }}
           >
-            <Clock size={16} color="var(--accent-cyan)" />
+            <Clock size={16} color="var(--blue)" />
             Activity Feed
           </h2>
 
@@ -490,13 +428,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               <div key={idx} className="activity-item animate-fade-up">
                 <div
                   className="activity-dot"
-                  style={{ background: kindDot[item.kind], boxShadow: `0 0 6px ${kindDot[item.kind]}` }}
+                  style={{ background: kindDot[item.kind] }}
                 />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>
+                  <div style={{ fontSize: "0.8125rem", color: "var(--ink-medium)", lineHeight: 1.4 }}>
                     {item.event}
                   </div>
-                  <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "3px" }}>
+                  <div style={{ fontSize: "0.6875rem", color: "var(--gray-400)", marginTop: "3px" }}>
                     Today at {item.time}
                   </div>
                 </div>
