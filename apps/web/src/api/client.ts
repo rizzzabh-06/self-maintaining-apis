@@ -124,3 +124,34 @@ export async function fetchValidation(migrationId: string) {
   const res = await fetch(`${API_BASE}/api/validations/${encodeURIComponent(migrationId)}`);
   return res.json();
 }
+
+export async function fetchAnalytics() {
+  const res = await fetch(`${API_BASE}/api/analytics`);
+  return res.json();
+}
+
+export async function fetchMigrationHistory(filters?: {
+  provider?: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+}) {
+  const params = new URLSearchParams();
+  if (filters?.provider) params.set("provider", filters.provider);
+  if (filters?.status) params.set("status", filters.status);
+  if (filters?.startDate) params.set("startDate", filters.startDate);
+  if (filters?.endDate) params.set("endDate", filters.endDate);
+  const qs = params.toString() ? `?${params.toString()}` : "";
+  const res = await fetch(`${API_BASE}/api/migrations${qs}`);
+  return res.json();
+}
+
+export async function fetchValidationDetails(validationId: string) {
+  return fetchValidation(validationId);
+}
+
+export async function fetchProviderStatus() {
+  const res = await fetch(`${API_BASE}/api/inventory/providers`);
+  return res.json();
+}
+

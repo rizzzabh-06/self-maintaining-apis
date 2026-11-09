@@ -48,3 +48,10 @@ dump.rdb
 # Project Context
 context.md
 
+# Cloned demo repositories and presentation artifacts
+demo-repo/
+.repos/
+*.pdf
+
+
+
