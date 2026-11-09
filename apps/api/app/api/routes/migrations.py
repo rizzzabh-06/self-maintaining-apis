@@ -12,7 +12,8 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from apps.api.app.db.session import get_db
-from apps.api.app.models.db_models import MigrationRun, ValidationRun, Repository
+from apps.api.app.models.db_models import MigrationRun, ValidationRun, Repository, GitHubAppInstallation
+from apps.api.app.api.routes.repositories import _ensure_repository_local
 from apps.worker.jobs.process_webhook import run_pipeline
 
 router = APIRouter(prefix="/api/migrations", tags=["Migrations"])
@@ -28,11 +29,12 @@ def _get_demo_repo_path() -> Path:
     return FIXTURES_DIR / "demo-repository"
 
 
-
 class TriggerMigrationRequest(BaseModel):
     provider: str = "fakepay"
     repo_name: str = "demo-org/demo-checkout"
+    repository_id: Optional[str] = None
     create_draft_pr: bool = True
+    publish_to_github: bool = False
 
 
 @router.post("/trigger", status_code=status.HTTP_201_CREATED)
@@ -41,22 +43,56 @@ def trigger_migration(
     db: Session = Depends(get_db),
 ):
     """Execute the full autonomous migration pipeline and persist the run to Neon DB."""
-    v1_path = FIXTURES_DIR / "api-v1" / "fakepay.yaml"
-    v2_path = FIXTURES_DIR / "api-v2" / "fakepay.yaml"
+    provider_slug = req.provider.lower()
+    v1_path = FIXTURES_DIR / "api-v1" / f"{provider_slug}.yaml"
+    v2_path = FIXTURES_DIR / "api-v2" / f"{provider_slug}.yaml"
+
+    if not v1_path.is_file():
+        v1_path = FIXTURES_DIR / "api-v1" / "fakepay.yaml"
+    if not v2_path.is_file():
+        v2_path = FIXTURES_DIR / "api-v2" / "fakepay.yaml"
 
     with open(v1_path) as f:
         v1 = yaml.safe_load(f)
     with open(v2_path) as f:
         v2 = yaml.safe_load(f)
 
+    # Resolve target repository
+    repo = None
+    if req.repository_id:
+        repo = db.query(Repository).filter(Repository.id == req.repository_id).first()
+    if not repo and req.repo_name:
+        repo = db.query(Repository).filter(
+            (Repository.github_repo == req.repo_name) | (Repository.name == req.repo_name)
+        ).first()
+
+    installation = db.query(GitHubAppInstallation).first()
+    token = None
+    if installation and installation.access_token and not installation.access_token.startswith("ghp_simulated_") and not installation.access_token.startswith("ghp_test_"):
+        token = installation.access_token
+    elif os.getenv("GITHUB_TOKEN"):
+        token = os.getenv("GITHUB_TOKEN")
+
+    if repo:
+        repo_path = _ensure_repository_local(repo, db)
+        repo_id = repo.id
+        repo_full_name = repo.github_repo
+    else:
+        repo_path = _get_demo_repo_path()
+        repo_id = "repo_demo_checkout"
+        repo_full_name = req.repo_name
+
     # 1. Run pipeline
     pipeline_res = run_pipeline(
         old_spec_data=v1,
         new_spec_data=v2,
-        repo_path=_get_demo_repo_path(),
-        repo_name=req.repo_name,
+        repo_path=repo_path,
+        repo_name=repo_full_name,
         provider=req.provider,
+        github_token=token,
+        publish_pr=req.publish_to_github,
     )
+
 
     # 2. Persist to Neon DB
     run_id = f"mig_{int(datetime.datetime.now(datetime.timezone.utc).timestamp())}"

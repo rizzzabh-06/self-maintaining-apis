@@ -46,6 +46,13 @@ class TestRepositoryManagementAndScan:
         assert "repositories" in data
         assert len(data["repositories"]) >= 1
 
+    def test_search_github_repositories(self):
+        res = client.get("/api/repositories/github?search=checkout")
+        assert res.status_code == 200
+        data = res.json()
+        assert "repositories" in data
+        assert isinstance(data["repositories"], list)
+
     def test_connect_and_scan_repository(self):
         # 1. Connect
         res = client.post(
@@ -61,6 +68,19 @@ class TestRepositoryManagementAndScan:
         scan_data = scan_res.json()
         assert scan_data["status"] == "ready"
         assert scan_data["usages_discovered"] >= 5
+
+    def test_disconnect_repository(self):
+        # Connect disposable test repo
+        res = client.post(
+            "/api/repositories/connect",
+            json={"github_repo": "test-org/disposable-repo", "name": "disposable-repo"},
+        )
+        repo_id = res.json()["id"]
+        del_res = client.delete(f"/api/repositories/{repo_id}")
+        assert del_res.status_code == 200
+        assert del_res.json()["status"] == "disconnected"
+
+
 
 
 class TestAutomationSettings:

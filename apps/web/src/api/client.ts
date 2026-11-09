@@ -33,8 +33,11 @@ export async function disconnectGitHub() {
   return res.json();
 }
 
-export async function fetchGitHubRepositories() {
-  const res = await fetch(`${API_BASE}/api/repositories/github`);
+export async function fetchGitHubRepositories(search?: string, page: number = 1) {
+  const url = search
+    ? `${API_BASE}/api/repositories/github?search=${encodeURIComponent(search)}&page=${page}`
+    : `${API_BASE}/api/repositories/github?page=${page}`;
+  const res = await fetch(url);
   return res.json();
 }
 
@@ -45,14 +48,32 @@ export async function fetchConnectedRepositories() {
 
 export const fetchRepositories = fetchConnectedRepositories;
 
-export async function connectRepository(githubRepo: string, name?: string) {
+export async function connectRepository(
+  githubRepo: string,
+  name?: string,
+  defaultBranch: string = "main",
+  language: string = "TypeScript"
+) {
   const res = await fetch(`${API_BASE}/api/repositories/connect`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ github_repo: githubRepo, name }),
+    body: JSON.stringify({
+      github_repo: githubRepo,
+      name,
+      default_branch: defaultBranch,
+      language,
+    }),
   });
   return res.json();
 }
+
+export async function disconnectRepository(repositoryId: string) {
+  const res = await fetch(`${API_BASE}/api/repositories/${encodeURIComponent(repositoryId)}`, {
+    method: "DELETE",
+  });
+  return res.json();
+}
+
 
 export async function triggerRepositoryScan(repositoryId: string) {
   const res = await fetch(`${API_BASE}/api/repositories/${encodeURIComponent(repositoryId)}/scan`, {
@@ -102,14 +123,21 @@ export async function fetchImpact(provider: string = "fakepay") {
   return res.json();
 }
 
-export async function triggerMigration(provider: string = "fakepay", repoName: string = "demo-org/demo-checkout") {
+export async function triggerMigration(
+  provider: string = "fakepay",
+  repoName: string = "demo-org/demo-checkout",
+  repositoryId?: string,
+  publishToGithub: boolean = false
+) {
   const res = await fetch(`${API_BASE}/api/migrations/trigger`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       provider,
       repo_name: repoName,
+      repository_id: repositoryId,
       create_draft_pr: true,
+      publish_to_github: publishToGithub,
     }),
   });
   return res.json();

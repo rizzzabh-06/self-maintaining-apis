@@ -22,6 +22,8 @@ def run_pipeline(
     repo_path: str | Path,
     repo_name: str = "demo-org/demo-checkout",
     provider: str = "fakepay",
+    github_token: Optional[str] = None,
+    publish_pr: bool = False,
 ) -> dict[str, Any]:
     """Execute the full end-to-end pipeline:
     1. Change Engine: diff specs
@@ -51,13 +53,22 @@ def run_pipeline(
     # 6. GitHub draft PR (only if PASS)
     draft_pr: GitHubDraftPR | None = None
     if validation_result.can_proceed_to_pr:
-        adapter = GitHubAdapter()
-        draft_pr = adapter.create_draft_pr(
-            repo_name=repo_name,
-            plan=migration_plan,
-            validation=validation_result,
-            impact=impact_report,
-        )
+        adapter = GitHubAdapter(token=github_token)
+        if publish_pr and github_token:
+            draft_pr = adapter.publish_remote_draft_pr(
+                repo_name=repo_name,
+                plan=migration_plan,
+                validation=validation_result,
+                impact=impact_report,
+            )
+        else:
+            draft_pr = adapter.create_draft_pr(
+                repo_name=repo_name,
+                plan=migration_plan,
+                validation=validation_result,
+                impact=impact_report,
+            )
+
 
     return {
         "provider": provider,

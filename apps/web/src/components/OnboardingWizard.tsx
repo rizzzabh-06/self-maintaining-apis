@@ -11,12 +11,21 @@ import {
   connectGitHub, 
   connectRepository, 
   triggerRepositoryScan, 
-  updateAutomationSettings 
+  updateAutomationSettings,
+  fetchGitHubRepositories
 } from "../api/client";
 
 interface OnboardingWizardProps {
   onComplete: () => void;
   onCancel: () => void;
+}
+
+interface AvailableRepo {
+  name: string;
+  fullName?: string;
+  lang: string;
+  desc: string;
+  defaultBranch?: string;
 }
 
 export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete, onCancel }) => {
@@ -33,11 +42,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete, 
   const [autoPrOnBreaking, setAutoPrOnBreaking] = useState(true);
   const [confidenceThreshold, setConfidenceThreshold] = useState(0.90);
 
-  const availableRepos = [
-    { name: "demo-org/demo-checkout", lang: "TypeScript", desc: "E-commerce checkout microservice with FakePay connector." },
-    { name: "demo-org/payments-worker", lang: "TypeScript", desc: "Background webhook processor for payment events." },
-    { name: "demo-org/billing-service", lang: "TypeScript", desc: "Subscription billing engine with Stripe integration." },
-  ];
+  const [availableRepos, setAvailableRepos] = useState<AvailableRepo[]>([
+    { name: "demo-org/demo-checkout", fullName: "demo-org/demo-checkout", lang: "TypeScript", desc: "E-commerce checkout microservice with FakePay connector.", defaultBranch: "main" },
+    { name: "demo-org/payments-worker", fullName: "demo-org/payments-worker", lang: "TypeScript", desc: "Background webhook processor for payment events.", defaultBranch: "main" },
+    { name: "demo-org/billing-service", fullName: "demo-org/billing-service", lang: "TypeScript", desc: "Subscription billing engine with Stripe integration.", defaultBranch: "main" },
+  ]);
+
 
   const steps = [
     { num: 1, title: "Log In" },
@@ -56,6 +66,16 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete, 
       setLoading(true);
       try {
         await connectGitHub(githubToken || undefined, githubAccount);
+        const gh = await fetchGitHubRepositories();
+        if (gh.repositories && gh.repositories.length > 0) {
+          setAvailableRepos(gh.repositories.map((r: any) => ({
+            name: r.name || r.full_name,
+            fullName: r.full_name,
+            lang: r.language || "TypeScript",
+            desc: r.description || "",
+            defaultBranch: r.default_branch || "main",
+          })));
+        }
       } finally {
         setLoading(false);
       }
@@ -63,7 +83,13 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete, 
       setLoading(true);
       try {
         for (const r of selectedRepos) {
-          await connectRepository(r);
+          const matched = availableRepos.find((ar: any) => ar.name === r || ar.fullName === r);
+          await connectRepository(
+            matched?.fullName || r,
+            matched?.name || r,
+            matched?.defaultBranch || "main",
+            matched?.lang || "TypeScript"
+          );
         }
       } finally {
         setLoading(false);
@@ -71,7 +97,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete, 
     } else if (currentStep === 5) {
       setLoading(true);
       try {
-        const res = await triggerRepositoryScan("repo_demo_checkout");
+        const repoName = selectedRepos[0] || "demo-checkout";
+        const cleanName = repoName.split("/").pop()?.replace(/[-.]/g, "_") || "demo_checkout";
+        const targetId = `repo_${cleanName}`;
+        const res = await triggerRepositoryScan(targetId).catch(() =>
+          triggerRepositoryScan("repo_demo_checkout")
+        );
         setScanResult(res);
       } finally {
         setLoading(false);
