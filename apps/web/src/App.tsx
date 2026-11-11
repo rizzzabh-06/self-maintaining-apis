@@ -8,6 +8,10 @@ import { Impact } from "./pages/Impact";
 import { Migration } from "./pages/Migration";
 import { Settings } from "./pages/Settings";
 import { SpecFeeds } from "./pages/SpecFeeds";
+import { Analytics } from "./pages/Analytics";
+import { MigrationHistory } from "./pages/MigrationHistory";
+import { ValidationDetails } from "./pages/ValidationDetails";
+import { ProviderDashboard } from "./pages/ProviderDashboard";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 
 export function App() {
@@ -39,6 +43,10 @@ export function App() {
         {activeTab === "migration" && <Migration />}
         {activeTab === "specfeeds" && <SpecFeeds />}
         {activeTab === "settings" && <Settings />}
+        {activeTab === "analytics" && <Analytics onNavigate={setActiveTab} />}
+        {activeTab === "migration-history" && <MigrationHistory />}
+        {activeTab === "validation-details" && <ValidationDetails />}
+        {activeTab === "providers" && <ProviderDashboard />}
       </main>
 
       {showOnboarding && (

@@ -4,29 +4,16 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
-  Terminal,
   FolderGit2,
-  GitPullRequest,
-  Zap,
   Clock,
   Activity,
-  TrendingUp,
 } from "lucide-react";
 import { fetchProviders, fetchRepositories, fetchChanges, fetchUsages } from "../api/client";
+import { PipelineMap } from "../components/PipelineMap";
 
 interface DashboardProps {
   onNavigate: (tab: string) => void;
 }
-
-const PIPELINE_STEPS = [
-  { label: "Provider Webhook", desc: "FakePay v2 released", icon: Zap, status: "Triggered" },
-  { label: "Change Engine", desc: "AST spec diff", icon: Activity, status: "3 Breaking" },
-  { label: "Repo Scanner", desc: "4-tier AST discovery", icon: Terminal, status: "Indexed" },
-  { label: "Impact Engine", desc: "4 files affected", icon: AlertTriangle, status: "High Risk" },
-  { label: "Migration Planner", desc: "Deterministic recipe", icon: TrendingUp, status: "98% Conf" },
-  { label: "Isolated Sandbox", desc: "Build + unit tests", icon: CheckCircle2, status: "PASS" },
-  { label: "GitHub Draft PR", desc: "Human review gated", icon: GitPullRequest, status: "Ready" },
-];
 
 const LANG_BREAKDOWN = [
   { lang: "TypeScript", pct: 68, barColor: "var(--blue)" },
@@ -57,7 +44,6 @@ const kindDot: Record<ActivityItem["kind"], string> = {
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [stats, setStats] = useState({ repos: 1, providers: 1, usages: 15, changes: 3, loading: true });
-  const [activePipelineStep, setActivePipelineStep] = useState(6);
   const [mounted, setMounted] = useState(false);
 
   const load = useCallback(async () => {
@@ -261,106 +247,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       {/* Main content grid */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "1.5rem", marginBottom: "1.5rem" }}>
 
-        {/* Pipeline Timeline */}
-        <div className="card" style={{ padding: "1.75rem" }}>
-          <h2
-            style={{
-              fontSize: "1rem",
-              fontWeight: 700,
-              marginBottom: "1.5rem",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              color: "var(--ink)",
-            }}
-          >
-            <Terminal size={18} color="var(--blue)" />
-            Autonomous Pipeline
-            <span
-              className="badge badge-success"
-              style={{ marginLeft: "auto", fontSize: "0.625rem" }}
-            >
-              PASS (100%)
-            </span>
-          </h2>
+        {/* Pipeline Map & AI Inspector */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <PipelineMap onStageSelect={(stageId) => {
+            if (stageId === "ast-scanner") onNavigate("repositories");
+            if (stageId === "ai-synthesis" || stageId === "sandbox-validation") onNavigate("migration");
+            if (stageId === "spec-ingest" || stageId === "change-engine") onNavigate("changes");
+          }} />
 
-          <div className="pipeline-timeline" style={{ gap: "0" }}>
-            {PIPELINE_STEPS.map((step, idx) => {
-              const Icon = step.icon;
-              const isComplete = idx <= activePipelineStep;
-              const isActive = idx === activePipelineStep;
-              return (
-                <div
-                  key={step.label}
-                  className="pipeline-step"
-                  style={{ minWidth: "110px" }}
-                  onMouseEnter={() => setActivePipelineStep(idx)}
-                  onMouseLeave={() => setActivePipelineStep(6)}
-                >
-                  {/* Connector line */}
-                  {idx < PIPELINE_STEPS.length - 1 && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "18px",
-                        left: "calc(50% + 18px)",
-                        width: "calc(100% - 36px)",
-                        height: "2px",
-                        background: isComplete ? "var(--blue)" : "var(--border)",
-                        transition: "background 0.3s ease",
-                        zIndex: 0,
-                        opacity: isComplete ? 0.5 : 1,
-                      }}
-                    />
-                  )}
-
-                  <div
-                    style={{
-                      width: "36px",
-                      height: "36px",
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      border: `2px solid ${isComplete ? "var(--blue)" : "var(--border)"}`,
-                      background: isComplete ? "var(--blue-wash)" : "var(--white)",
-                      boxShadow: isActive ? "var(--shadow-focus)" : "none",
-                      zIndex: 1,
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    <Icon size={16} color={isComplete ? "var(--blue)" : "var(--gray-400)"} />
-                  </div>
-                  <div style={{ marginTop: "8px", textAlign: "center", padding: "0 4px" }}>
-                    <div
-                      style={{
-                        fontSize: "0.6875rem",
-                        fontWeight: 700,
-                        color: isComplete ? "var(--ink)" : "var(--gray-400)",
-                        marginBottom: "2px",
-                        transition: "color 0.2s",
-                      }}
-                    >
-                      {step.label}
-                    </div>
-                    <span
-                      className="badge badge-success"
-                      style={{
-                        fontSize: "0.5625rem",
-                        opacity: isComplete ? 1 : 0.35,
-                        transition: "opacity 0.2s",
-                      }}
-                    >
-                      {step.status}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Language Breakdown */}
-          <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid var(--border-light)" }}>
+          {/* Language Breakdown Card */}
+          <div className="card" style={{ padding: "1.25rem 1.75rem" }}>
             <div
               style={{
                 fontSize: "0.6875rem",

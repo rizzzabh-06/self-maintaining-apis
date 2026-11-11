@@ -10,6 +10,9 @@ import {
   Rss,
   Wifi,
   WifiOff,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -28,6 +31,10 @@ const tabs = [
   { id: "migration", label: "Migration Console", icon: GitPullRequest, shortcut: "6" },
   { id: "specfeeds", label: "Spec Feeds", icon: Rss, shortcut: "7" },
   { id: "settings", label: "Settings", icon: Sliders, shortcut: "8" },
+  { id: "analytics", label: "Analytics", icon: TrendingUp, shortcut: "9" },
+  { id: "migration-history", label: "History", icon: Clock, shortcut: "0" },
+  { id: "providers", label: "Providers", icon: Boxes, shortcut: "a" },
+  { id: "validation-details", label: "Validation", icon: CheckCircle2, shortcut: "v" },
 ];
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -56,9 +63,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key >= "1" && e.key <= "8") {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      const key = e.key.toLowerCase();
+      // digits 1-9, 0
+      if ((e.key >= "1" && e.key <= "9") || e.key === "0") {
         e.preventDefault();
         const tab = tabs.find((t) => t.shortcut === e.key);
+        if (tab) setActiveTab(tab.id);
+      }
+      // letter shortcuts: a → providers, v → validation-details
+      if (key === "a" || key === "v") {
+        e.preventDefault();
+        const tab = tabs.find((t) => t.shortcut === key);
         if (tab) setActiveTab(tab.id);
       }
     };
