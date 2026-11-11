@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Activity,
 } from "lucide-react";
+import { fetchProviderStatus } from "../api/client";
 
 interface ProviderVersion {
   version: string;
@@ -194,10 +195,9 @@ export const ProviderDashboard: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/inventory/providers").catch(() => null);
-      if (res?.ok) {
-        const data = await res.json();
-        setProviders(data.providers || MOCK_PROVIDERS);
+      const data = await fetchProviderStatus().catch(() => null);
+      if (Array.isArray(data) && data.length > 0) {
+        setProviders(data);
       } else {
         setProviders(MOCK_PROVIDERS);
       }

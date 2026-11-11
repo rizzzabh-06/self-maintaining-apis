@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Loader2,
 } from "lucide-react";
+import { fetchValidationList } from "../api/client";
 
 interface TestResult {
   name: string;
@@ -163,11 +164,9 @@ export const ValidationDetails: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      // Real endpoint: GET /api/validations — scaffolded, falls back to mock
-      const res = await fetch("/api/validations").catch(() => null);
-      if (res?.ok) {
-        const data = await res.json();
-        setValidations(data.items || MOCK_VALIDATIONS);
+      const data = await fetchValidationList({ limit: 20 }).catch(() => null);
+      if (data?.items?.length) {
+        setValidations(data.items);
       } else {
         setValidations(MOCK_VALIDATIONS);
       }

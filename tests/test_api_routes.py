@@ -20,7 +20,47 @@ class TestHealthAndInventoryRoutes:
         assert response.status_code == 200
         providers = response.json()
         assert isinstance(providers, list)
-        assert any(p["slug"] == "fakepay" for p in providers)
+        fakepay = next((p for p in providers if p["slug"] == "fakepay"), None)
+        assert fakepay is not None, "fakepay provider must be present"
+        # Enriched fields added in this session
+        assert "health" in fakepay, "providers must include 'health'"
+        assert fakepay["health"] in ("healthy", "degraded", "down")
+        assert "current_version" in fakepay
+        assert "latest_version" in fakepay
+        assert "webhook_active" in fakepay
+        assert "usages_count" in fakepay
+        assert "repos_affected" in fakepay
+        assert "version_history" in fakepay
+        assert isinstance(fakepay["version_history"], list)
+
+    def test_get_provider_by_slug(self):
+        response = client.get("/api/inventory/providers/fakepay")
+        assert response.status_code == 200
+        p = response.json()
+        assert p["slug"] == "fakepay"
+        assert "breaking_change_history" in p
+        assert isinstance(p["breaking_change_history"], list)
+
+    def test_get_provider_by_slug_not_found(self):
+        response = client.get("/api/inventory/providers/does-not-exist")
+        assert response.status_code == 404
+
+    def test_list_validations(self):
+        """GET /api/validations should return an envelope with an items list."""
+        response = client.get("/api/validations")
+        assert response.status_code == 200
+        data = response.json()
+        assert "items" in data
+        assert isinstance(data["items"], list)
+        assert "total" in data
+
+    def test_list_validations_status_filter(self):
+        """Filter by status=passed should return only passed runs (or empty list)."""
+        response = client.get("/api/validations?status=passed")
+        assert response.status_code == 200
+        data = response.json()
+        for item in data["items"]:
+            assert item["status"] == "passed"
 
     def test_list_repositories(self):
         response = client.get("/api/inventory/repositories")

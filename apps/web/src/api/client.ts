@@ -178,8 +178,24 @@ export async function fetchValidationDetails(validationId: string) {
   return fetchValidation(validationId);
 }
 
+/** List recent validation runs — calls GET /api/validations */
+export async function fetchValidationList(opts?: { limit?: number; status?: string }) {
+  const params = new URLSearchParams();
+  if (opts?.limit) params.set("limit", String(opts.limit));
+  if (opts?.status) params.set("status", opts.status);
+  const qs = params.toString() ? `?${params.toString()}` : "";
+  const res = await fetch(`${API_BASE}/api/validations${qs}`);
+  return res.json(); // { items: ValidationRun[], total: number }
+}
+
+/** Fetch a single provider by slug — GET /api/inventory/providers/:slug */
+export async function fetchProviderBySlug(slug: string) {
+  const res = await fetch(`${API_BASE}/api/inventory/providers/${encodeURIComponent(slug)}`);
+  return res.json();
+}
+
 export async function fetchProviderStatus() {
   const res = await fetch(`${API_BASE}/api/inventory/providers`);
-  return res.json();
+  return res.json(); // enriched provider list
 }
 
