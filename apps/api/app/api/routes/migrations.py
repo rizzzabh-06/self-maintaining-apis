@@ -96,8 +96,9 @@ def trigger_migration(
 
     # 2. Persist to Neon DB
     run_id = f"mig_{int(datetime.datetime.now(datetime.timezone.utc).timestamp())}"
-    repo = db.query(Repository).filter(Repository.name == "demo-checkout").first()
-    repo_id = repo.id if repo else "repo_demo_checkout"
+    if not repo_id:
+        fallback_repo = db.query(Repository).filter(Repository.name == "demo-checkout").first()
+        repo_id = fallback_repo.id if fallback_repo else "repo_demo_checkout"
 
     db_migration = MigrationRun(
         id=run_id,

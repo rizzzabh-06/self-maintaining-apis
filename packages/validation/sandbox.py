@@ -86,6 +86,13 @@ class IsolatedSandbox:
             if content.count("(") != content.count(")"):
                 errors.append(f"Unmatched parentheses in {file_path.name}")
 
+        for file_path in self.sandbox_dir.rglob("*.py"):
+            try:
+                content = file_path.read_text(encoding="utf-8")
+                compile(content, str(file_path), "exec")
+            except Exception as e:
+                errors.append(f"Python syntax error in {file_path.name}: {e}")
+
         duration = int((time.time() - start) * 1000)
         if errors:
             return StepResult(
