@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from typing import Optional
 import yaml
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi import APIRouter, Depends, Query, HTTPException, status, BackgroundTasks, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -36,11 +36,90 @@ class TriggerMigrationRequest(BaseModel):
     repository_id: Optional[str] = None
     create_draft_pr: bool = True
     publish_to_github: bool = False
+    background: bool = False
+
+
+def _run_migration_in_background(
+    run_id: str,
+    repo_id: str,
+    repo_path: Path,
+    repo_full_name: str,
+    provider: str,
+    token: Optional[str],
+    publish_to_github: bool,
+    v1: dict,
+    v2: dict,
+):
+    """Background task to run the pipeline, persist results to Neon DB, and broadcast SSE events."""
+    from apps.api.app.db.session import SessionLocal
+
+    # 1. Run pipeline
+    pipeline_res = run_pipeline(
+        old_spec_data=v1,
+        new_spec_data=v2,
+        repo_path=repo_path,
+        repo_name=repo_full_name,
+        provider=provider,
+        github_token=token,
+        publish_pr=publish_to_github,
+    )
+
+    # 2. Persist to Neon DB
+    db = SessionLocal()
+    try:
+        db_migration = db.query(MigrationRun).filter(MigrationRun.id == run_id).first()
+        if db_migration:
+            db_migration.status = "passed" if pipeline_res["validation_status"] == "PASS" else "failed"
+            db_migration.plan = pipeline_res.get("draft_pr")
+            db_migration.confidence = pipeline_res["confidence"]
+            db_migration.risk_level = pipeline_res["risk_level"]
+            db_migration.pr_url = pipeline_res["draft_pr"]["pr_url"] if pipeline_res.get("draft_pr") else None
+        else:
+            db_migration = MigrationRun(
+                id=run_id,
+                repository_id=repo_id,
+                provider=provider,
+                status="passed" if pipeline_res["validation_status"] == "PASS" else "failed",
+                plan=pipeline_res.get("draft_pr"),
+                confidence=pipeline_res["confidence"],
+                risk_level=pipeline_res["risk_level"],
+                is_deterministic=True,
+                pr_url=pipeline_res["draft_pr"]["pr_url"] if pipeline_res.get("draft_pr") else None,
+                created_at=datetime.datetime.now(datetime.timezone.utc),
+            )
+            db.add(db_migration)
+
+        db_validation = ValidationRun(
+            id=f"val_{run_id}",
+            migration_id=run_id,
+            overall_status=pipeline_res["validation_status"],
+            build_status="PASS",
+            test_status="PASS",
+            contract_status="PASS",
+            logs=pipeline_res,
+            executed_at=datetime.datetime.now(datetime.timezone.utc),
+        )
+        db.add(db_validation)
+        db.commit()
+    finally:
+        db.close()
+
+    # 3. Broadcast SSE completion
+    event_broadcaster.broadcast_sync("migration_completed", {
+        "migration_id": run_id,
+        "repo_name": repo_full_name,
+        "provider": provider,
+        "status": pipeline_res["validation_status"],
+        "pr_url": pipeline_res["draft_pr"]["pr_url"] if pipeline_res.get("draft_pr") else None,
+        "changes_count": pipeline_res.get("changes_detected", 0),
+    })
 
 
 @router.post("/trigger", status_code=status.HTTP_201_CREATED)
 def trigger_migration(
     req: TriggerMigrationRequest,
+    background_tasks: BackgroundTasks,
+    response: Response,
     db: Session = Depends(get_db),
 ):
     """Execute the full autonomous migration pipeline and persist the run to Neon DB."""
@@ -84,11 +163,52 @@ def trigger_migration(
         repo_full_name = req.repo_name
 
     # 1. Run pipeline
+    run_id = f"mig_{int(datetime.datetime.now(datetime.timezone.utc).timestamp())}"
+    if not repo_id:
+        fallback_repo = db.query(Repository).filter(Repository.name == "demo-checkout").first()
+        repo_id = fallback_repo.id if fallback_repo else "repo_demo_checkout"
+
     event_broadcaster.broadcast_sync("migration_started", {
+        "migration_id": run_id,
         "provider": req.provider,
         "repo_name": repo_full_name,
         "publish_pr": req.publish_to_github,
     })
+
+    if req.background:
+        # Pre-create placeholder record in Neon DB
+        db_migration = MigrationRun(
+            id=run_id,
+            repository_id=repo_id,
+            provider=req.provider,
+            status="validating",
+            confidence=0.95,
+            risk_level="high",
+            is_deterministic=True,
+            created_at=datetime.datetime.now(datetime.timezone.utc),
+        )
+        db.add(db_migration)
+        db.commit()
+
+        background_tasks.add_task(
+            _run_migration_in_background,
+            run_id=run_id,
+            repo_id=repo_id,
+            repo_path=repo_path,
+            repo_full_name=repo_full_name,
+            provider=req.provider,
+            token=token,
+            publish_to_github=req.publish_to_github,
+            v1=v1,
+            v2=v2,
+        )
+        response.status_code = status.HTTP_202_ACCEPTED
+        return {
+            "migration_id": run_id,
+            "status": "validating",
+            "message": "Migration pipeline executing in background task",
+        }
+
     pipeline_res = run_pipeline(
         old_spec_data=v1,
         new_spec_data=v2,
@@ -99,13 +219,7 @@ def trigger_migration(
         publish_pr=req.publish_to_github,
     )
 
-
     # 2. Persist to Neon DB
-    run_id = f"mig_{int(datetime.datetime.now(datetime.timezone.utc).timestamp())}"
-    if not repo_id:
-        fallback_repo = db.query(Repository).filter(Repository.name == "demo-checkout").first()
-        repo_id = fallback_repo.id if fallback_repo else "repo_demo_checkout"
-
     db_migration = MigrationRun(
         id=run_id,
         repository_id=repo_id,

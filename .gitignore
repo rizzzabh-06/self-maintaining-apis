@@ -48,6 +48,11 @@ dump.rdb
 # Project Context
 context.md
 
+# Database artifacts
+*.db
+*.sqlite
+*.sqlite3
+
 # Cloned demo repositories and presentation artifacts
 demo-repo/
 .repos/

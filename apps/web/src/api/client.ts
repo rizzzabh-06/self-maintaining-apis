@@ -127,7 +127,8 @@ export async function triggerMigration(
   provider: string = "fakepay",
   repoName: string = "demo-org/demo-checkout",
   repositoryId?: string,
-  publishToGithub: boolean = false
+  publishToGithub: boolean = false,
+  background: boolean = false
 ) {
   const res = await fetch(`${API_BASE}/api/migrations/trigger`, {
     method: "POST",
@@ -138,6 +139,7 @@ export async function triggerMigration(
       repository_id: repositoryId,
       create_draft_pr: true,
       publish_to_github: publishToGithub,
+      background,
     }),
   });
   return res.json();

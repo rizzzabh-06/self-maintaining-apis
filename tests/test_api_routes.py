@@ -132,3 +132,16 @@ class TestMigrationAndValidationRoutes:
         assert val_res.status_code == 200
         val_data = val_res.json()
         assert val_data["overall_status"] == "PASS"
+
+    def test_trigger_migration_background_tasks(self):
+        """POST /api/migrations/trigger with background=True should return 202 Accepted."""
+        payload = {
+            "provider": "fakepay",
+            "repo_name": "demo-org/demo-checkout",
+            "background": True,
+        }
+        res = client.post("/api/migrations/trigger", json=payload)
+        assert res.status_code == 202
+        data = res.json()
+        assert data["migration_id"].startswith("mig_")
+        assert data["status"] in ("validating", "passed")

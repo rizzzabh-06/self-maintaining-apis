@@ -63,3 +63,4 @@ def get_stream_status():
         "status": "ready",
         "active_subscribers": len(event_broadcaster._subscribers),
     }
+
