@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import {
   Boxes,
   AlertTriangle,
@@ -7,9 +7,11 @@ import {
   FolderGit2,
   Clock,
   Activity,
+  Loader2,
 } from "lucide-react";
 import { fetchProviders, fetchRepositories, fetchChanges, fetchUsages } from "../api/client";
-import { PipelineMap } from "../components/PipelineMap";
+
+const PipelineMap = lazy(() => import("../components/PipelineMap").then(m => ({ default: m.PipelineMap })));
 
 interface DashboardProps {
   onNavigate: (tab: string) => void;
@@ -249,11 +251,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
         {/* Pipeline Map & AI Inspector */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <PipelineMap onStageSelect={(stageId) => {
-            if (stageId === "ast-scanner") onNavigate("repositories");
-            if (stageId === "ai-synthesis" || stageId === "sandbox-validation") onNavigate("migration");
-            if (stageId === "spec-ingest" || stageId === "change-engine") onNavigate("changes");
-          }} />
+          <Suspense fallback={
+            <div className="card" style={{ padding: "2rem", display: "flex", justifyContent: "center", color: "var(--blue)" }}>
+              <Loader2 size={24} style={{ animation: "spin 1s linear infinite" }} />
+            </div>
+          }>
+            <PipelineMap onStageSelect={(stageId) => {
+              if (stageId === "ast-scanner") onNavigate("repositories");
+              if (stageId === "ai-synthesis" || stageId === "sandbox-validation") onNavigate("migration");
+              if (stageId === "spec-ingest" || stageId === "change-engine") onNavigate("changes");
+            }} />
+          </Suspense>
 
           {/* Language Breakdown Card */}
           <div className="card" style={{ padding: "1.25rem 1.75rem" }}>

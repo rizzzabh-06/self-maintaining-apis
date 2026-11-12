@@ -15,6 +15,7 @@ from apps.api.app.api.routes.impact import router as impact_router
 from apps.api.app.api.routes.migrations import router as migrations_router
 from apps.api.app.api.routes.validations import router as validations_router
 from apps.api.app.api.routes.analytics import router as analytics_router
+from apps.api.app.api.routes.events import router as events_router
 
 app = FastAPI(
     title="Self-Maintaining API Agent API",
@@ -42,6 +43,7 @@ app.include_router(impact_router)
 app.include_router(migrations_router)
 app.include_router(validations_router)
 app.include_router(analytics_router)
+app.include_router(events_router)
 
 
 

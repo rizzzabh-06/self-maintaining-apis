@@ -23,6 +23,9 @@ dev = [
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+filterwarnings = [
+    "ignore:.*Using `httpx` with `starlette.testclient` is deprecated.*:Warning",
+]
 
 [build-system]
 requires = ["setuptools>=68.0"]

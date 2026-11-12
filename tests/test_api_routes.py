@@ -15,6 +15,14 @@ class TestHealthAndInventoryRoutes:
         assert response.json()["status"] == "ok"
         assert "Neon" in response.json()["database"]
 
+    def test_events_stream_status(self):
+        """GET /api/events/status should return status ready."""
+        response = client.get("/api/events/status")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "ready"
+        assert "active_subscribers" in data
+
     def test_list_providers(self):
         response = client.get("/api/inventory/providers")
         assert response.status_code == 200

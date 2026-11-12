@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from apps.api.app.db.session import get_db
+from apps.api.app.core.events import event_broadcaster
 from apps.api.app.models.db_models import Repository, APIUsageModel, Organization, GitHubAppInstallation
 from packages.repository_analyzer.scanner import scan_repository
 
@@ -334,6 +335,14 @@ def trigger_repository_scan(
     repo.status = "ready"
     repo.last_scanned_at = datetime.datetime.now(datetime.timezone.utc)
     db.commit()
+
+    event_broadcaster.broadcast_sync("scan_completed", {
+        "repository_id": repo.id,
+        "name": repo.name,
+        "github_repo": repo.github_repo,
+        "usages_count": len(scan_res.usages),
+        "providers_found": scan_res.providers,
+    })
 
     return {
         "repository_id": repo.id,

@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from apps.api.app.db.session import get_db
 from apps.api.app.models.db_models import MigrationRun, ValidationRun, Repository, GitHubAppInstallation
 from apps.api.app.api.routes.repositories import _ensure_repository_local
+from apps.api.app.core.events import event_broadcaster
 from apps.worker.jobs.process_webhook import run_pipeline
 
 router = APIRouter(prefix="/api/migrations", tags=["Migrations"])
@@ -83,6 +84,11 @@ def trigger_migration(
         repo_full_name = req.repo_name
 
     # 1. Run pipeline
+    event_broadcaster.broadcast_sync("migration_started", {
+        "provider": req.provider,
+        "repo_name": repo_full_name,
+        "publish_pr": req.publish_to_github,
+    })
     pipeline_res = run_pipeline(
         old_spec_data=v1,
         new_spec_data=v2,
@@ -126,6 +132,15 @@ def trigger_migration(
     )
     db.add(db_validation)
     db.commit()
+
+    event_broadcaster.broadcast_sync("migration_completed", {
+        "migration_id": run_id,
+        "repo_name": repo_full_name,
+        "provider": req.provider,
+        "status": pipeline_res["validation_status"],
+        "pr_url": pipeline_res["draft_pr"]["pr_url"] if pipeline_res.get("draft_pr") else None,
+        "changes_count": pipeline_res.get("changes_detected", 0),
+    })
 
     return {
         "migration_id": run_id,

@@ -13,6 +13,7 @@ from fastapi import APIRouter, Header, HTTPException, Request, status
 from pydantic import BaseModel
 
 from apps.api.app.core.security import verify_webhook_signature
+from apps.api.app.core.events import event_broadcaster
 from apps.worker.jobs.process_webhook import run_pipeline
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,12 @@ async def handle_provider_webhook(
         raise HTTPException(status_code=400, detail="Invalid JSON payload.")
 
     # Locate specs
+    event_broadcaster.broadcast_sync("webhook_received", {
+        "source": "provider",
+        "provider": payload_dict.get("provider", "fakepay"),
+        "event": payload_dict.get("event", "api_change"),
+        "repo": payload_dict.get("repo_name", "demo-org/demo-checkout"),
+    })
     fixtures_dir = Path(__file__).parents[5] / "tests" / "fixtures"
     v1_path = fixtures_dir / "api-v1" / "fakepay.yaml"
     v2_path = fixtures_dir / "api-v2" / "fakepay.yaml"
@@ -148,6 +155,12 @@ async def handle_github_webhook(
     event = (x_github_event or "unknown").lower()
     delivery_id = x_github_delivery or "unknown"
     logger.info("GitHub webhook received: event=%s delivery=%s", event, delivery_id)
+    event_broadcaster.broadcast_sync("webhook_received", {
+        "source": "github",
+        "event": event,
+        "delivery_id": delivery_id,
+        "repo": payload.get("repository", {}).get("full_name", ""),
+    })
 
     # --- Ping handshake ------------------------------------------------------
     if event == "ping":
