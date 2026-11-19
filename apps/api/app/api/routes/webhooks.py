@@ -8,7 +8,6 @@ import os
 from pathlib import Path
 from typing import Any, Dict
 
-import yaml
 from fastapi import APIRouter, Header, HTTPException, Request, status
 from pydantic import BaseModel
 
@@ -20,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 
-DEFAULT_SECRET = os.getenv("FAKEPAY_WEBHOOK_SECRET", "test_webhook_secret_key_123")
+DEFAULT_SECRET = os.getenv("FAKEPAY_WEBHOOK_SECRET", "")
 GITHUB_WEBHOOK_SECRET = os.getenv("GITHUB_WEBHOOK_SECRET", "")
 
 
@@ -32,7 +31,9 @@ class ProviderWebhookPayload(BaseModel):
     old_spec_url: str | None = None
     new_spec_url: str | None = None
     repo_path: str | None = None
-    repo_name: str | None = "demo-org/demo-checkout"
+    repo_name: str | None = None
+    old_spec: dict | None = None
+    new_spec: dict | None = None
 
 
 @router.post("/provider", status_code=status.HTTP_202_ACCEPTED)
@@ -53,40 +54,48 @@ async def handle_provider_webhook(
         )
 
     try:
-        import json
         payload_dict = json.loads(body_bytes.decode("utf-8"))
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid JSON payload.")
 
-    # Locate specs
+    provider = payload_dict.get("provider")
+    repo_name = payload_dict.get("repo_name")
+    old_spec = payload_dict.get("old_spec")
+    new_spec = payload_dict.get("new_spec")
+    repo_path = payload_dict.get("repo_path")
+
     event_broadcaster.broadcast_sync("webhook_received", {
         "source": "provider",
-        "provider": payload_dict.get("provider", "fakepay"),
+        "provider": provider,
         "event": payload_dict.get("event", "api_change"),
-        "repo": payload_dict.get("repo_name", "demo-org/demo-checkout"),
+        "repo": repo_name or "",
     })
-    fixtures_dir = Path(__file__).parents[5] / "tests" / "fixtures"
-    v1_path = fixtures_dir / "api-v1" / "fakepay.yaml"
-    v2_path = fixtures_dir / "api-v2" / "fakepay.yaml"
-    repo_path = Path(payload_dict.get("repo_path") or (fixtures_dir / "demo-repository"))
 
-    with open(v1_path) as f:
-        old_spec = yaml.safe_load(f)
-    with open(v2_path) as f:
-        new_spec = yaml.safe_load(f)
+    # Spec retrieval from a provider URL/changelog is not implemented; require inline specs.
+    if not old_spec or not new_spec:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Provider webhook requires inline `old_spec` and `new_spec` (spec fetching not implemented).",
+        )
 
-    # Run the pipeline
+    if not repo_path:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="target repository path required",
+        )
+
+    # Run the pipeline with the real inline specs and target repository.
     result = run_pipeline(
         old_spec_data=old_spec,
         new_spec_data=new_spec,
-        repo_path=repo_path,
-        repo_name=payload_dict.get("repo_name", "demo-org/demo-checkout"),
-        provider=payload_dict.get("provider", "fakepay"),
+        repo_path=Path(repo_path),
+        repo_name=repo_name or "",
+        provider=provider or "",
     )
 
     return {
         "status": "accepted",
-        "message": f"Successfully processed change event for {payload_dict.get('provider', 'fakepay')}.",
+        "message": f"Successfully processed change event for {provider}.",
         "pipeline_result": result,
     }
 
@@ -128,23 +137,21 @@ async def handle_github_webhook(
 
     # --- Signature verification -------------------------------------------
     if not GITHUB_WEBHOOK_SECRET:
-        # Secret not configured — log a warning and proceed in dev mode only.
-        logger.warning(
-            "GITHUB_WEBHOOK_SECRET is not set. "
-            "Skipping signature check (dev/test mode only)."
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="GITHUB_WEBHOOK_SECRET not configured; webhook rejected.",
         )
-    else:
-        if not verify_webhook_signature(body_bytes, x_hub_signature_256, GITHUB_WEBHOOK_SECRET):
-            logger.warning(
-                "GitHub webhook HMAC verification failed. "
-                "delivery=%s event=%s",
-                x_github_delivery,
-                x_github_event,
-            )
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or missing X-Hub-Signature-256 header.",
-            )
+
+    if not verify_webhook_signature(body_bytes, x_hub_signature_256, GITHUB_WEBHOOK_SECRET):
+        logger.warning(
+            "GitHub webhook HMAC verification failed. delivery=%s event=%s",
+            x_github_delivery,
+            x_github_event,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing X-Hub-Signature-256 header.",
+        )
 
     # --- Parse payload -------------------------------------------------------
     try:
@@ -180,7 +187,6 @@ async def handle_github_webhook(
 
     # --- Extract repository context from GitHub payload ----------------------
     repo_info = payload.get("repository", {})
-    repo_full_name: str = repo_info.get("full_name", "demo-org/demo-checkout")
     default_branch: str = repo_info.get("default_branch", "main")
 
     # For push events, only run if the push is to the default branch.
@@ -193,31 +199,8 @@ async def handle_github_webhook(
                 "message": f"Push to '{pushed_ref}' ignored (not default branch '{default_branch}').",
             }
 
-    # --- Trigger pipeline with fixture specs (live spec fetching TODO) -------
-    fixtures_dir = Path(__file__).parents[5] / "tests" / "fixtures"
-    v1_path = fixtures_dir / "api-v1" / "fakepay.yaml"
-    v2_path = fixtures_dir / "api-v2" / "fakepay.yaml"
-
-    try:
-        with open(v1_path) as f:
-            old_spec = yaml.safe_load(f)
-        with open(v2_path) as f:
-            new_spec = yaml.safe_load(f)
-    except FileNotFoundError as exc:
-        logger.error("Fixture spec file missing: %s", exc)
-        raise HTTPException(status_code=500, detail=f"Spec fixture not found: {exc}")
-
-    result = run_pipeline(
-        old_spec_data=old_spec,
-        new_spec_data=new_spec,
-        repo_path=fixtures_dir / "demo-repository",
-        repo_name=repo_full_name,
-        provider="fakepay",
+    # --- Spec retrieval from GitHub is not implemented; fail loudly. ---------
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="GitHub webhook spec retrieval not implemented; cannot run pipeline.",
     )
-
-    return {
-        "status": "accepted",
-        "message": f"GitHub '{event}' event processed for {repo_full_name}.",
-        "delivery_id": delivery_id,
-        "pipeline_result": result,
-    }

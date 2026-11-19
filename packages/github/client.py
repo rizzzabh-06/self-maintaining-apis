@@ -66,8 +66,8 @@ class GitHubAdapter:
             body=body,
             changed_files=plan.changed_files,
             is_draft=True,
-            pr_number=101,
-            pr_url=f"https://github.com/{repo_name}/pull/101",
+            pr_number=None,
+            pr_url=None,
         )
 
         return draft_pr
@@ -92,8 +92,8 @@ class GitHubAdapter:
                 f"Reason: {validation.error_summary or 'One or more validation steps failed.'}"
             )
 
-        if not self.token or self.token.startswith("ghp_simulated_") or self.token.startswith("ghp_test_"):
-            return self.create_draft_pr(repo_name, plan, validation, impact, base_branch)
+        if not self.token:
+            raise ValueError("publish_remote_draft_pr requires a real GitHub token")
 
         digest = hashlib.sha256(
             f"{''.join(plan.changed_files)}-{int(time.time())}".encode("utf-8")
@@ -117,8 +117,10 @@ class GitHubAdapter:
                     f"https://api.github.com/repos/{repo_name}/git/ref/heads/{base_branch}"
                 )
                 if ref_resp.status_code != 200:
-                    logger.warning("Could not fetch base branch ref: %s", ref_resp.text)
-                    return self.create_draft_pr(repo_name, plan, validation, impact, base_branch)
+                    raise RuntimeError(
+                        f"Failed to publish draft PR to {repo_name}: could not fetch base branch ref "
+                        f"({ref_resp.status_code}): {ref_resp.text}"
+                    )
 
                 base_sha = ref_resp.json()["object"]["sha"]
 
@@ -128,8 +130,10 @@ class GitHubAdapter:
                     json={"ref": f"refs/heads/{branch_name}", "sha": base_sha},
                 )
                 if create_branch_resp.status_code not in (200, 201):
-                    logger.warning("Could not create branch: %s", create_branch_resp.text)
-                    return self.create_draft_pr(repo_name, plan, validation, impact, base_branch)
+                    raise RuntimeError(
+                        f"Failed to publish draft PR to {repo_name}: could not create branch "
+                        f"({create_branch_resp.status_code}): {create_branch_resp.text}"
+                    )
 
                 # 3. Update/commit changed files on new branch
                 for patch in plan.file_patches:
@@ -180,13 +184,15 @@ class GitHubAdapter:
                         body=body,
                         changed_files=plan.changed_files,
                         is_draft=True,
-                        pr_number=pr_data.get("number", 101),
-                        pr_url=pr_data.get("html_url", f"https://github.com/{repo_name}/pull/101"),
+                        pr_number=pr_data.get("number"),
+                        pr_url=pr_data.get("html_url"),
                     )
-                else:
-                    logger.warning("Could not open Draft PR: %s", pr_resp.text)
-                    return self.create_draft_pr(repo_name, plan, validation, impact, base_branch)
+                raise RuntimeError(
+                    f"Failed to publish draft PR to {repo_name}: could not open Draft PR "
+                    f"({pr_resp.status_code}): {pr_resp.text}"
+                )
+        except RuntimeError:
+            raise
         except Exception as exc:
-            logger.warning("Failed remote GitHub operation: %s", exc)
-            return self.create_draft_pr(repo_name, plan, validation, impact, base_branch)
+            raise RuntimeError(f"Failed to publish draft PR to {repo_name}: {exc}")
 

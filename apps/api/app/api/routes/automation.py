@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import datetime
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from apps.api.app.db.session import get_db
-from apps.api.app.models.db_models import AutomationSettings
+from apps.api.app.models.db_models import AutomationSettings, Organization
 
 router = APIRouter(prefix="/api/automation", tags=["Automation"])
 
@@ -25,9 +25,15 @@ def get_automation_settings(db: Session = Depends(get_db)):
     """Retrieve workspace automation settings."""
     settings = db.query(AutomationSettings).first()
     if not settings:
+        org = db.query(Organization).first()
+        if not org:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="No organization configured",
+            )
         settings = AutomationSettings(
             id="auto_setting_01",
-            organization_id="org-wispy-boat-92392834",
+            organization_id=org.id,
             auto_scan_on_push=True,
             auto_pr_on_breaking=True,
             confidence_threshold=0.90,
@@ -54,9 +60,15 @@ def update_automation_settings(
     """Update workspace automation settings."""
     settings = db.query(AutomationSettings).first()
     if not settings:
+        org = db.query(Organization).first()
+        if not org:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="No organization configured",
+            )
         settings = AutomationSettings(
             id="auto_setting_01",
-            organization_id="org-wispy-boat-92392834",
+            organization_id=org.id,
         )
         db.add(settings)
 

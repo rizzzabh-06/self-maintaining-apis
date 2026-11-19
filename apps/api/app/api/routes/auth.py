@@ -34,11 +34,14 @@ class WorkspaceCreateRequest(BaseModel):
 def get_session(db: Session = Depends(get_db)):
     """Retrieve current logged-in user, active workspace, and GitHub connection status."""
     load_env(override=True)
-    # Find or create primary organization/workspace
-    org = db.query(Organization).filter(Organization.id == "org-wispy-boat-92392834").first()
-    if not org:
-        org = db.query(Organization).first()
+    user_record = db.query(User).first()
+    if not user_record:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
 
+    org = db.query(Organization).first()
     installation = db.query(GitHubAppInstallation).first()
     token = None
     if installation and installation.access_token:
@@ -47,26 +50,25 @@ def get_session(db: Session = Depends(get_db)):
         token = os.getenv("GITHUB_TOKEN")
 
     github_connected = bool(token)
-    user_record = db.query(User).first()
 
     return {
         "user": {
-            "id": user_record.id if user_record else "usr_demo_01",
-            "name": user_record.name if (user_record and user_record.name) else "Rizzabh Admin",
-            "email": user_record.email if (user_record and user_record.email) else "admin@example.com",
-            "avatar_url": user_record.avatar_url if (user_record and user_record.avatar_url) else "https://avatars.githubusercontent.com/u/9919?v=4",
+            "id": user_record.id,
+            "name": user_record.name,
+            "email": user_record.email,
+            "avatar_url": user_record.avatar_url,
         },
         "workspace": {
-            "id": org.id if org else "org-wispy-boat-92392834",
-            "name": org.name if org else "Rizzabh",
-            "slug": org.slug if org else "rizzabh",
+            "id": org.id if org else None,
+            "name": org.name if org else None,
+            "slug": org.slug if org else None,
         },
         "github": {
             "connected": github_connected,
-            "account_login": installation.account_login if installation else (os.getenv("GITHUB_USER") or "demo-org"),
+            "account_login": installation.account_login if installation else "",
             "account_type": installation.account_type if installation else "Organization",
             "installation_id": installation.id if installation else None,
-            "has_token": bool(token and not token.startswith("ghp_simulated_")),
+            "has_token": bool(token),
             "has_app_configured": bool(os.getenv("GITHUB_APP_ID") or os.getenv("GITHUB_CLIENT_ID")),
         },
     }
@@ -174,9 +176,14 @@ def github_oauth_callback(
         if email:
             user.email = email
 
-    # Find or create Organization
+    # Resolve the workspace organization
     org = db.query(Organization).first()
-    org_id = org.id if org else "org-wispy-boat-92392834"
+    if not org:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="No organization configured; create a workspace first",
+        )
+    org_id = org.id
 
     # Persist or update GitHubAppInstallation
     installation = db.query(GitHubAppInstallation).first()
@@ -233,8 +240,8 @@ def connect_github(
     avatar_url = None
     name = account_login
 
-    # Validate against GitHub API if real token provided
-    if token and not token.startswith("ghp_test_") and not token.startswith("ghp_simulated_"):
+    # Validate any provided token against the GitHub API.
+    if token:
         try:
             with httpx.Client(timeout=10.0) as http_client:
                 resp = http_client.get(
@@ -253,17 +260,29 @@ def connect_github(
                 elif resp.status_code == 401:
                     raise HTTPException(
                         status_code=401,
-                        detail="Invalid GitHub Token: Authentication failed with GitHub API.",
+                        detail="Invalid GitHub token: authentication failed with GitHub API.",
                     )
-        except httpx.RequestError:
-            # If network is unavailable in test environment, allow connection
-            pass
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_502_BAD_GATEWAY,
+                        detail=f"GitHub token validation failed: {resp.status_code}",
+                    )
+        except httpx.RequestError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Cannot reach GitHub to validate token: {exc}",
+            )
 
-    account_login = account_login or "demo-org"
+    account_login = account_login or ""
     inst_id = req.installation_id or f"inst_{secrets.token_hex(6)}"
 
     org = db.query(Organization).first()
-    org_id = org.id if org else "org-wispy-boat-92392834"
+    if not org:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="No organization configured; create a workspace first",
+        )
+    org_id = org.id
 
     installation = db.query(GitHubAppInstallation).first()
     if not installation:
@@ -272,15 +291,14 @@ def connect_github(
             organization_id=org_id,
             account_login=account_login,
             account_type=account_type,
-            access_token=token or "ghp_simulated_token",
+            access_token=token,
             selected_repositories=[],
         )
         db.add(installation)
     else:
         installation.account_login = account_login
         installation.account_type = account_type
-        if token:
-            installation.access_token = token
+        installation.access_token = token
 
     # Sync User profile if name/avatar discovered
     if avatar_url or name:

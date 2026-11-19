@@ -6,7 +6,6 @@ import datetime
 import os
 from pathlib import Path
 from typing import Optional
-import yaml
 from fastapi import APIRouter, Depends, Query, HTTPException, status, BackgroundTasks, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -19,24 +18,16 @@ from apps.worker.jobs.process_webhook import run_pipeline
 
 router = APIRouter(prefix="/api/migrations", tags=["Migrations"])
 
-FIXTURES_DIR = Path(__file__).parents[5] / "tests" / "fixtures"
-DEMO_REPO = FIXTURES_DIR / "demo-repository"
-
-def _get_demo_repo_path() -> Path:
-    """Return demo repo path from env var or default to fixtures."""
-    env_path = os.getenv("GITHUB_DEMO_REPO_PATH", "").strip()
-    if env_path:
-        return Path(env_path).resolve()
-    return FIXTURES_DIR / "demo-repository"
-
 
 class TriggerMigrationRequest(BaseModel):
-    provider: str = "fakepay"
-    repo_name: str = "demo-org/demo-checkout"
+    provider: str
+    repo_name: str
     repository_id: Optional[str] = None
     create_draft_pr: bool = True
     publish_to_github: bool = False
     background: bool = False
+    old_spec: Optional[dict] = None
+    new_spec: Optional[dict] = None
 
 
 def _run_migration_in_background(
@@ -123,21 +114,14 @@ def trigger_migration(
     db: Session = Depends(get_db),
 ):
     """Execute the full autonomous migration pipeline and persist the run to Neon DB."""
-    provider_slug = req.provider.lower()
-    v1_path = FIXTURES_DIR / "api-v1" / f"{provider_slug}.yaml"
-    v2_path = FIXTURES_DIR / "api-v2" / f"{provider_slug}.yaml"
+    # Spec retrieval from a provider URL/changelog is not implemented; require inline specs.
+    if not req.old_spec or not req.new_spec:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Migration requires `old_spec` and `new_spec` (spec fetching not implemented).",
+        )
 
-    if not v1_path.is_file():
-        v1_path = FIXTURES_DIR / "api-v1" / "fakepay.yaml"
-    if not v2_path.is_file():
-        v2_path = FIXTURES_DIR / "api-v2" / "fakepay.yaml"
-
-    with open(v1_path) as f:
-        v1 = yaml.safe_load(f)
-    with open(v2_path) as f:
-        v2 = yaml.safe_load(f)
-
-    # Resolve target repository
+    # Resolve target repository from the database.
     repo = None
     if req.repository_id:
         repo = db.query(Repository).filter(Repository.id == req.repository_id).first()
@@ -145,28 +129,21 @@ def trigger_migration(
         repo = db.query(Repository).filter(
             (Repository.github_repo == req.repo_name) | (Repository.name == req.repo_name)
         ).first()
+    if not repo:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Repository not found: {req.repo_name}",
+        )
 
     installation = db.query(GitHubAppInstallation).first()
-    token = None
-    if installation and installation.access_token and not installation.access_token.startswith("ghp_simulated_") and not installation.access_token.startswith("ghp_test_"):
-        token = installation.access_token
-    elif os.getenv("GITHUB_TOKEN"):
-        token = os.getenv("GITHUB_TOKEN")
+    token = installation.access_token if (installation and installation.access_token) else os.getenv("GITHUB_TOKEN")
 
-    if repo:
-        repo_path = _ensure_repository_local(repo, db)
-        repo_id = repo.id
-        repo_full_name = repo.github_repo
-    else:
-        repo_path = _get_demo_repo_path()
-        repo_id = "repo_demo_checkout"
-        repo_full_name = req.repo_name
+    repo_path = _ensure_repository_local(repo, db)
+    repo_id = repo.id
+    repo_full_name = repo.github_repo
 
     # 1. Run pipeline
     run_id = f"mig_{int(datetime.datetime.now(datetime.timezone.utc).timestamp())}"
-    if not repo_id:
-        fallback_repo = db.query(Repository).filter(Repository.name == "demo-checkout").first()
-        repo_id = fallback_repo.id if fallback_repo else "repo_demo_checkout"
 
     event_broadcaster.broadcast_sync("migration_started", {
         "migration_id": run_id,
@@ -199,8 +176,8 @@ def trigger_migration(
             provider=req.provider,
             token=token,
             publish_to_github=req.publish_to_github,
-            v1=v1,
-            v2=v2,
+            v1=req.old_spec,
+            v2=req.new_spec,
         )
         response.status_code = status.HTTP_202_ACCEPTED
         return {
@@ -210,8 +187,8 @@ def trigger_migration(
         }
 
     pipeline_res = run_pipeline(
-        old_spec_data=v1,
-        new_spec_data=v2,
+        old_spec_data=req.old_spec,
+        new_spec_data=req.new_spec,
         repo_path=repo_path,
         repo_name=repo_full_name,
         provider=req.provider,

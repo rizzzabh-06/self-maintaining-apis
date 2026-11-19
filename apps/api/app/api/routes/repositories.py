@@ -15,45 +15,25 @@ from sqlalchemy.orm import Session
 
 from apps.api.app.db.session import get_db
 from apps.api.app.core.events import event_broadcaster
-from apps.api.app.models.db_models import Repository, APIUsageModel, Organization, GitHubAppInstallation
+from apps.api.app.models.db_models import Repository, APIUsageModel, Organization, GitHubAppInstallation, MigrationRun, ValidationRun
 from packages.repository_analyzer.scanner import scan_repository
 
 router = APIRouter(prefix="/api/repositories", tags=["Repositories"])
 
-FIXTURES_DIR = Path(__file__).parents[5] / "tests" / "fixtures"
-DEMO_REPO = FIXTURES_DIR / "demo-repository"
 REPOS_CACHE_DIR = Path(__file__).parents[5] / ".repos"
 
 
-def _get_demo_repo_path() -> Path:
-    """Return demo repo path from env var or default to fixtures."""
-    env_path = os.getenv("GITHUB_DEMO_REPO_PATH", "").strip()
-    if env_path:
-        return Path(env_path).resolve()
-    return FIXTURES_DIR / "demo-repository"
-
-
 def _ensure_repository_local(repo: Repository, db: Session) -> Path:
-    """Ensure repository files are present locally for static AST analysis."""
-    # 1. Fallback for demo-checkout fixture
-    if repo.github_repo == "demo-org/demo-checkout":
-        return _get_demo_repo_path()
+    """Ensure repository files are present locally for static AST analysis.
 
-    # 2. Check local demo-repo directory
-    local_demo_repo = Path(__file__).parents[5] / "demo-repo"
-    if repo.github_repo == "rizzzabh-06/fakepay-nextjs-demo" and local_demo_repo.is_dir():
-        return local_demo_repo
-
-    # 3. For any remote repository, clone or pull into .repos/{sanitized_name}
+    Clones (or pulls) the repository into ``.repos/{sanitized_name}``. Fails
+    loudly on clone failure instead of falling back to a demo repository.
+    """
     sanitized = repo.github_repo.replace("/", "_").replace(" ", "_")
     target_dir = REPOS_CACHE_DIR / sanitized
 
     installation = db.query(GitHubAppInstallation).first()
-    token = None
-    if installation and installation.access_token and not installation.access_token.startswith("ghp_simulated_") and not installation.access_token.startswith("ghp_test_"):
-        token = installation.access_token
-    elif os.getenv("GITHUB_TOKEN"):
-        token = os.getenv("GITHUB_TOKEN")
+    token = installation.access_token if (installation and installation.access_token) else os.getenv("GITHUB_TOKEN")
 
     if target_dir.is_dir() and (target_dir / ".git").is_dir():
         try:
@@ -84,11 +64,14 @@ def _ensure_repository_local(repo: Repository, db: Session) -> Path:
         )
         if proc.returncode == 0 and target_dir.is_dir():
             return target_dir
-    except Exception:
-        pass
+        stderr = proc.stderr.strip() or "unknown error"
+    except Exception as exc:
+        stderr = str(exc)
 
-    # If cloning fails or times out (e.g. offline sandbox), fallback safely
-    return _get_demo_repo_path()
+    raise HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail=f"Failed to clone repository {repo.github_repo}: {stderr}",
+    )
 
 
 class ConnectRepoRequest(BaseModel):
@@ -109,20 +92,33 @@ def list_github_repositories(
     installation = db.query(GitHubAppInstallation).first()
     connected_repos = {r.github_repo for r in db.query(Repository).all()}
 
-    token = None
-    if installation and installation.access_token and not installation.access_token.startswith("ghp_simulated_") and not installation.access_token.startswith("ghp_test_"):
-        token = installation.access_token
-    elif os.getenv("GITHUB_TOKEN"):
-        token = os.getenv("GITHUB_TOKEN")
+    token = installation.access_token if (installation and installation.access_token) else os.getenv("GITHUB_TOKEN")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="GitHub not configured: no token and repository search failed",
+        )
 
     headers = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
+        "Authorization": f"Bearer {token}",
     }
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-
     repos_list = []
+
+    def _enrich(item: dict) -> dict:
+        return {
+            "github_id": item["id"],
+            "full_name": item["full_name"],
+            "name": item["name"],
+            "default_branch": item.get("default_branch", "main"),
+            "language": item.get("language") or "TypeScript",
+            "is_private": item.get("private", False),
+            "description": item.get("description") or "",
+            "html_url": item.get("html_url"),
+            "stargazers_count": item.get("stargazers_count", 0),
+            "is_connected": item["full_name"] in connected_repos,
+        }
 
     # 1. If search query is provided, query GitHub Search API
     if search and search.strip():
@@ -135,109 +131,49 @@ def list_github_repositories(
                 if resp.status_code == 200:
                     data = resp.json()
                     for item in data.get("items", []):
-                        repos_list.append({
-                            "github_id": item["id"],
-                            "full_name": item["full_name"],
-                            "name": item["name"],
-                            "default_branch": item.get("default_branch", "main"),
-                            "language": item.get("language") or "TypeScript",
-                            "is_private": item.get("private", False),
-                            "description": item.get("description") or "",
-                            "html_url": item.get("html_url"),
-                            "stargazers_count": item.get("stargazers_count", 0),
-                            "is_connected": item["full_name"] in connected_repos,
-                        })
+                        repos_list.append(_enrich(item))
                     return {
                         "account_login": installation.account_login if installation else "github-user",
                         "total_count": data.get("total_count", len(repos_list)),
                         "is_live": True,
                         "repositories": repos_list,
                     }
-        except Exception:
-            pass
-
-    # 2. If token is available, query real user repositories
-    if token:
-        try:
-            with httpx.Client(timeout=10.0, headers=headers) as client:
-                resp = client.get(
-                    "https://api.github.com/user/repos",
-                    params={"per_page": per_page, "page": page, "sort": "updated", "affiliation": "owner,collaborator,organization_member"},
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"GitHub search failed: {resp.status_code}",
                 )
-                if resp.status_code == 200:
-                    data = resp.json()
-                    for item in data:
-                        repos_list.append({
-                            "github_id": item["id"],
-                            "full_name": item["full_name"],
-                            "name": item["name"],
-                            "default_branch": item.get("default_branch", "main"),
-                            "language": item.get("language") or "TypeScript",
-                            "is_private": item.get("private", False),
-                            "description": item.get("description") or "",
-                            "html_url": item.get("html_url"),
-                            "stargazers_count": item.get("stargazers_count", 0),
-                            "is_connected": item["full_name"] in connected_repos,
-                        })
-                    return {
-                        "account_login": installation.account_login if installation else "github-user",
-                        "total_count": len(repos_list),
-                        "is_live": True,
-                        "repositories": repos_list,
-                    }
-        except Exception:
-            pass
+        except httpx.RequestError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Cannot reach GitHub: {exc}",
+            )
 
-    # 3. Default fallback sample list (guarantees tests pass and offline functionality)
-    available = [
-        {
-            "github_id": 101,
-            "full_name": "demo-org/demo-checkout",
-            "name": "demo-checkout",
-            "default_branch": "main",
-            "language": "TypeScript",
-            "is_private": True,
-            "description": "E-commerce checkout microservice utilizing FakePay API.",
-            "is_connected": "demo-org/demo-checkout" in connected_repos,
-        },
-        {
-            "github_id": 102,
-            "full_name": "demo-org/payments-worker",
-            "name": "payments-worker",
-            "default_branch": "main",
-            "language": "TypeScript",
-            "is_private": True,
-            "description": "Background webhook worker processing payment provider notifications.",
-            "is_connected": "demo-org/payments-worker" in connected_repos,
-        },
-        {
-            "github_id": 103,
-            "full_name": "demo-org/billing-service",
-            "name": "billing-service",
-            "default_branch": "main",
-            "language": "TypeScript",
-            "is_private": False,
-            "description": "Recurring subscription billing engine with Stripe & FakePay connectors.",
-            "is_connected": "demo-org/billing-service" in connected_repos,
-        },
-        {
-            "github_id": 104,
-            "full_name": "rizzzabh-06/fakepay-nextjs-demo",
-            "name": "fakepay-nextjs-demo",
-            "default_branch": "main",
-            "language": "TypeScript",
-            "is_private": False,
-            "description": "Pre-migration Next.js checkout service (FakePay + Stripe) — demo target for the Self-Maintaining API Agent.",
-            "is_connected": "rizzzabh-06/fakepay-nextjs-demo" in connected_repos,
-        },
-    ]
-
-    return {
-        "account_login": installation.account_login if installation else "demo-org",
-        "total_count": len(available),
-        "is_live": False,
-        "repositories": available,
-    }
+    # 2. Query real user repositories
+    try:
+        with httpx.Client(timeout=10.0, headers=headers) as client:
+            resp = client.get(
+                "https://api.github.com/user/repos",
+                params={"per_page": per_page, "page": page, "sort": "updated", "affiliation": "owner,collaborator,organization_member"},
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                for item in data:
+                    repos_list.append(_enrich(item))
+                return {
+                    "account_login": installation.account_login if installation else "github-user",
+                    "total_count": len(repos_list),
+                    "is_live": True,
+                    "repositories": repos_list,
+                }
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"GitHub repository list failed: {resp.status_code}",
+            )
+    except httpx.RequestError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Cannot reach GitHub: {exc}",
+        )
 
 
 @router.get("")
@@ -272,10 +208,16 @@ def connect_repository(
     name = req.name or req.github_repo.split("/")[-1]
 
     if not repo:
+        org = db.query(Organization).first()
+        if not org:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="No organization configured; create a workspace first",
+            )
         repo_id = f"repo_{name.replace('-', '_').replace('.', '_')}"
         repo = Repository(
             id=repo_id,
-            organization_id="org-wispy-boat-92392834",
+            organization_id=org.id,
             name=name,
             github_repo=req.github_repo,
             default_branch=req.default_branch,
@@ -362,12 +304,6 @@ def disconnect_repository(
     repo = db.query(Repository).filter(Repository.id == repository_id).first()
     if not repo:
         raise HTTPException(status_code=404, detail="Repository not found.")
-
-    # Protect primary demo repository from full deletion to preserve historical migration audits
-    if repo.id in ("repo_demo_checkout", "repo_demo_checkout_primary") or repo.name == "demo-checkout":
-        repo.is_monitored = False
-        db.commit()
-        return {"status": "disconnected", "id": repository_id}
 
     db.query(APIUsageModel).filter(APIUsageModel.repository_id == repo.id).delete()
     migration_ids = [m.id for m in repo.migrations]

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import Dict, List, Any
+from typing import Dict, Any
 from fastapi import APIRouter, Depends
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -41,14 +41,15 @@ def get_analytics(db: Session = Depends(get_db)) -> Dict[str, Any]:
     success_rate = (
         round((passed_migrations / total_migrations) * 100, 1)
         if total_migrations > 0
-        else 95.0
+        else 0.0
     )
 
-    avg_confidence = db.query(func.avg(MigrationRun.confidence)).scalar() or 0.96
+    avg_confidence = db.query(func.avg(MigrationRun.confidence)).scalar()
+    avg_confidence = float(avg_confidence) if avg_confidence is not None else 0.0
 
     # 3. Outcomes breakdown for pie chart
     outcomes = [
-        {"name": "Passed", "value": max(passed_migrations, 1), "color": "#10B981"},
+        {"name": "Passed", "value": passed_migrations, "color": "#10B981"},
         {"name": "Failed", "value": failed_migrations, "color": "#EF4444"},
         {"name": "Validating", "value": validating_migrations, "color": "#29B5E8"},
     ]
@@ -67,26 +68,19 @@ def get_analytics(db: Session = Depends(get_db)) -> Dict[str, Any]:
         {"repo": name or "repository", "count": count or 0}
         for name, count in repo_usages
     ]
-    if not top_repos:
-        top_repos = [
-            {"repo": "demo-checkout", "count": 15},
-            {"repo": "payments-worker", "count": 8},
-            {"repo": "billing-service", "count": 6},
-        ]
 
-    # 5. Breaking changes trend (recent 7 days or mock curve)
+    # 5. Breaking changes trend (recent 7 days, real counts)
     today = datetime.datetime.now(datetime.timezone.utc).date()
     trend = []
     for i in range(6, -1, -1):
         day = today - datetime.timedelta(days=i)
         date_str = day.strftime("%b %d")
-        # Estimate trend points based on recorded migrations or sensible curve
         count = db.query(MigrationRun).filter(
             func.date(MigrationRun.created_at) == day
         ).count()
         trend.append({
             "date": date_str,
-            "count": count if count > 0 else (1 + (i % 3)),
+            "count": count,
         })
 
     # 6. Provider status and distribution
@@ -103,27 +97,22 @@ def get_analytics(db: Session = Depends(get_db)) -> Dict[str, Any]:
             "is_active": p.is_active,
         })
 
-    if not provider_breakdown:
-        provider_breakdown = [
-            {"name": "FakePay", "slug": "fakepay", "usages": 15, "migrations": 6, "is_active": True},
-            {"name": "Stripe", "slug": "stripe", "usages": 8, "migrations": 2, "is_active": True},
-        ]
+    prs_awaiting_review = db.query(MigrationRun).filter(MigrationRun.pr_url.isnot(None)).count()
 
     return {
         "summary": {
-            "total_repositories": total_repos or 1,
-            "total_usages": total_usages or 15,
-            "total_migrations": total_migrations or 8,
-            "passed_migrations": passed_migrations or 8,
+            "total_repositories": total_repos,
+            "total_usages": total_usages,
+            "total_migrations": total_migrations,
+            "passed_migrations": passed_migrations,
             "failed_migrations": failed_migrations,
             "success_rate": success_rate,
-            "avg_confidence": round(float(avg_confidence) * 100, 1),
-            "prs_awaiting_review": db.query(MigrationRun).filter(MigrationRun.pr_url.isnot(None)).count() or 1,
-            "avg_validation_seconds": 3.8,
+            "avg_confidence": round(avg_confidence * 100, 1) if total_migrations > 0 else 0.0,
+            "prs_awaiting_review": prs_awaiting_review,
+            "avg_validation_seconds": 0.0,
         },
         "migration_outcomes": outcomes,
         "top_repositories": top_repos,
         "breaking_changes_trend": trend,
         "providers": provider_breakdown,
     }
-

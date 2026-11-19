@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import yaml
 
@@ -20,8 +20,8 @@ def run_pipeline(
     old_spec_data: dict,
     new_spec_data: dict,
     repo_path: str | Path,
-    repo_name: str = "demo-org/demo-checkout",
-    provider: str = "fakepay",
+    repo_name: str,
+    provider: str,
     github_token: Optional[str] = None,
     publish_pr: bool = False,
 ) -> dict[str, Any]:
