@@ -45,7 +45,7 @@ const kindDot: Record<ActivityItem["kind"], string> = {
 };
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
-  const [stats, setStats] = useState({ repos: 1, providers: 1, usages: 15, changes: 3, loading: true });
+  const [stats, setStats] = useState({ repos: 0, providers: 0, usages: 0, changes: 0, loading: true });
   const [mounted, setMounted] = useState(false);
 
   const load = useCallback(async () => {
@@ -54,13 +54,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         fetchProviders().catch(() => []),
         fetchRepositories().catch(() => []),
         fetchUsages().catch(() => []),
-        fetchChanges().catch(() => ({ total_changes: 3 })),
+        fetchChanges().catch(() => []),
       ]);
       setStats({
         repos: Array.isArray(r) ? r.length : 1,
         providers: Array.isArray(p) ? p.length : 1,
         usages: Array.isArray(u) ? u.length : 15,
-        changes: (c as any)?.total_changes || 3,
+        changes: Array.isArray(c) ? c.length : ((c as any)?.total_changes ?? 0),
         loading: false,
       });
     } catch {
