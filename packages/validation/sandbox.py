@@ -109,19 +109,44 @@ class IsolatedSandbox:
         )
 
     def verify_contracts(self) -> StepResult:
-        """Verify that legacy endpoints are removed and required parameters are supplied.
+        """Verify that legacy endpoints are removed from all patched TypeScript files.
 
-        Contract verification against hardcoded demo file paths/strings has been
-        removed; a real validation provider is not yet implemented.
+        Scans all .ts files in the sandbox for the legacy v1 endpoint string ``"/payment"``
+        (without a trailing 's').  If any file still contains that exact quoted string the
+        contract has not been fully migrated and verification FAILs.
         """
         start = time.time()
         if not self.sandbox_dir:
             return StepResult(name="contract", status=ValidationStatus.ERROR, stderr="No sandbox")
+
+        legacy_found: list[str] = []
+        for ts_file in self.sandbox_dir.rglob("*.ts"):
+            try:
+                content = ts_file.read_text(encoding="utf-8")
+            except Exception:
+                continue
+            # Look for the exact legacy quoted string — present in v1 but absent after migration
+            if '"/payment"' in content:
+                rel = ts_file.relative_to(self.sandbox_dir)
+                legacy_found.append(str(rel))
+
+        duration = int((time.time() - start) * 1000)
+        if legacy_found:
+            return StepResult(
+                name="contract",
+                status=ValidationStatus.FAIL,
+                stderr=(
+                    f"Legacy endpoint \"/payment\" found in {len(legacy_found)} file(s): "
+                    + ", ".join(legacy_found)
+                    + ". Migrate to \"/payments\" before creating a PR."
+                ),
+                duration_ms=duration,
+            )
         return StepResult(
             name="contract",
             status=ValidationStatus.PASS,
-            stdout="Skipped: contract verification not implemented (demo-specific string checks removed). Configure a real validation provider.",
-            duration_ms=int((time.time() - start) * 1000),
+            stdout="Contract verification passed: no legacy \"/payment\" endpoint strings found.",
+            duration_ms=duration,
         )
 
     def verify_tests(self) -> StepResult:

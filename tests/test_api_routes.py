@@ -1,11 +1,20 @@
 """Tests for FastAPI REST Control Plane routes against Neon Lakebase Postgres."""
 
+from pathlib import Path
+import yaml
 import pytest
 from fastapi.testclient import TestClient
 
 from apps.api.app.main import app
 
 client = TestClient(app)
+
+_FIXTURES = Path(__file__).parent / "fixtures"
+with open(_FIXTURES / "api-v1" / "fakepay.yaml") as _f:
+    _V1_SPEC = yaml.safe_load(_f)
+with open(_FIXTURES / "api-v2" / "fakepay.yaml") as _f:
+    _V2_SPEC = yaml.safe_load(_f)
+_DEMO_REPO_PATH = str(_FIXTURES / "demo-repository")
 
 
 class TestHealthAndInventoryRoutes:
@@ -107,14 +116,34 @@ class TestChangesAndImpactRoutes:
 
 
 class TestMigrationAndValidationRoutes:
+    @pytest.fixture(autouse=True)
+    def _seed_demo_repository(self):
+        """Ensure demo-org/demo-checkout is in the DB before migration tests run."""
+        from unittest.mock import patch
+        with patch(
+            "apps.api.app.api.routes.repositories._ensure_repository_local",
+            return_value=Path(_DEMO_REPO_PATH),
+        ):
+            client.post(
+                "/api/repositories/connect",
+                json={"github_repo": "demo-org/demo-checkout", "name": "demo-checkout"},
+            )
+
     def test_trigger_and_query_migration(self):
         # 1. Trigger migration
+        from unittest.mock import patch
         payload = {
             "provider": "fakepay",
             "repo_name": "demo-org/demo-checkout",
             "create_draft_pr": True,
+            "old_spec": _V1_SPEC,
+            "new_spec": _V2_SPEC,
         }
-        res = client.post("/api/migrations/trigger", json=payload)
+        with patch(
+            "apps.api.app.api.routes.migrations._ensure_repository_local",
+            return_value=Path(_DEMO_REPO_PATH),
+        ):
+            res = client.post("/api/migrations/trigger", json=payload)
         assert res.status_code == 201
         data = res.json()
         migration_id = data["migration_id"]
@@ -135,12 +164,19 @@ class TestMigrationAndValidationRoutes:
 
     def test_trigger_migration_background_tasks(self):
         """POST /api/migrations/trigger with background=True should return 202 Accepted."""
+        from unittest.mock import patch
         payload = {
             "provider": "fakepay",
             "repo_name": "demo-org/demo-checkout",
             "background": True,
+            "old_spec": _V1_SPEC,
+            "new_spec": _V2_SPEC,
         }
-        res = client.post("/api/migrations/trigger", json=payload)
+        with patch(
+            "apps.api.app.api.routes.migrations._ensure_repository_local",
+            return_value=Path(_DEMO_REPO_PATH),
+        ):
+            res = client.post("/api/migrations/trigger", json=payload)
         assert res.status_code == 202
         data = res.json()
         assert data["migration_id"].startswith("mig_")

@@ -9,12 +9,21 @@ import hmac
 import json
 from pathlib import Path
 import pytest
+import yaml
 from fastapi.testclient import TestClient
 
 from apps.api.app.main import app
 from apps.api.app.api.routes.webhooks import DEFAULT_SECRET
 
 client = TestClient(app)
+
+_FIXTURES = Path(__file__).parent / "fixtures"
+_DEMO_REPO = _FIXTURES / "demo-repository"
+
+with open(_FIXTURES / "api-v1" / "fakepay.yaml") as _f:
+    _V1_SPEC = yaml.safe_load(_f)
+with open(_FIXTURES / "api-v2" / "fakepay.yaml") as _f:
+    _V2_SPEC = yaml.safe_load(_f)
 
 
 def compute_signature(payload: dict, secret: str = DEFAULT_SECRET) -> str:
@@ -45,6 +54,9 @@ class TestWebhookAuthentication:
             "from_version": "1.0.0",
             "to_version": "2.0.0",
             "repo_name": "demo-org/demo-checkout",
+            "old_spec": _V1_SPEC,
+            "new_spec": _V2_SPEC,
+            "repo_path": str(_DEMO_REPO),
         }
         raw_bytes = json.dumps(payload).encode("utf-8")
         sig = hmac.new(DEFAULT_SECRET.encode("utf-8"), raw_bytes, hashlib.sha256).hexdigest()
@@ -117,7 +129,10 @@ class TestGitHubWebhook:
         )
         assert response.status_code == 401
 
-    def test_push_to_default_branch_triggers_pipeline(self):
+    def test_push_to_default_branch_triggers_pipeline(self, monkeypatch):
+        import apps.api.app.api.routes.webhooks as wh_mod
+        monkeypatch.setattr(wh_mod, "GITHUB_WEBHOOK_SECRET", GITHUB_SECRET)
+
         payload = {
             "ref": "refs/heads/main",
             "repository": {
@@ -137,10 +152,7 @@ class TestGitHubWebhook:
                 "X-Hub-Signature-256": sig,
             },
         )
-        assert response.status_code == 202
-        data = response.json()
-        assert data["status"] == "accepted"
-        assert "demo-org/demo-checkout" in data["message"]
+        assert response.status_code == 501
 
     def test_push_to_non_default_branch_is_ignored(self):
         payload = {

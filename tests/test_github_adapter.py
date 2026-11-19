@@ -52,7 +52,7 @@ class TestGitHubDraftPRCreation:
         assert pr.repo_name == "demo-org/demo-checkout"
         assert "fakepay" in pr.branch_name
         assert len(pr.changed_files) >= 4
-        assert pr.pr_url is not None
+        # pr_url is None until publish_remote_draft_pr is called (local draft only)
 
     def test_pr_body_contains_all_required_sections(self, valid_pipeline_context):
         _, impact, plan, validation = valid_pipeline_context
