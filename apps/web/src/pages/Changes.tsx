@@ -23,7 +23,21 @@ export const Changes: React.FC = () => {
   const load = useCallback(async () => {
     try {
       const data = await fetchChanges();
-      setChangesData(data);
+      // Normalise DB field names → what the UI template expects
+      const normalised = (Array.isArray(data) ? data : data?.changes ?? []).map((c: any) => {
+        const isRename = c.change_type === "endpoint_renamed";
+        const isFieldRequired = c.change_type === "field_required";
+        return {
+          ...c,
+          // path renames
+          old_path: isRename ? c.old_value : undefined,
+          new_path: isRename ? c.new_value : undefined,
+          // field-required changes
+          old_required: isFieldRequired ? false : undefined,
+          new_required: isFieldRequired ? true  : undefined,
+        };
+      });
+      setChangesData(normalised);
     } catch (err) {
       console.error(err);
     } finally {
@@ -215,7 +229,9 @@ export const Changes: React.FC = () => {
                           Previous (v1.0.0)
                         </div>
                         <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.82rem", color: "var(--ink-medium)" }}>
-                          {c.old_path || (c.old_required !== undefined ? "currency: optional" : "—")}
+                          {c.old_path
+                            ? `${(c.evidence?.method || "").toUpperCase() || "→"} ${c.old_path}`
+                            : (c.old_required !== undefined ? "currency?: string  // optional" : "—")}
                         </div>
                       </div>
                       <div
@@ -230,7 +246,9 @@ export const Changes: React.FC = () => {
                           New Contract (v2.0.0)
                         </div>
                         <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.82rem", color: "var(--ink)", fontWeight: 600 }}>
-                          {c.new_path || (c.new_required !== undefined ? "currency: REQUIRED" : "—")}
+                          {c.new_path
+                            ? `${(c.evidence?.method || "").toUpperCase() || "→"} ${c.new_path}`
+                            : (c.new_required !== undefined ? "currency: string  // required" : "—")}
                         </div>
                       </div>
                     </div>
