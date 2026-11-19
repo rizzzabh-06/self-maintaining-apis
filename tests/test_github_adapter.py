@@ -42,14 +42,14 @@ class TestGitHubDraftPRCreation:
         adapter = GitHubAdapter()
 
         pr = adapter.create_draft_pr(
-            repo_name="demo-org/demo-checkout",
+            repo_name="rizzzabh-06/fakepay-demo-consumer",
             plan=plan,
             validation=validation,
             impact=impact,
         )
 
         assert pr.is_draft is True
-        assert pr.repo_name == "demo-org/demo-checkout"
+        assert pr.repo_name == "rizzzabh-06/fakepay-demo-consumer"
         assert "fakepay" in pr.branch_name
         assert len(pr.changed_files) >= 4
         # pr_url is None until publish_remote_draft_pr is called (local draft only)
@@ -94,7 +94,7 @@ class TestGatingOnValidationFailure:
 
         with pytest.raises(ValueError, match="Cannot create PR: Validation status is FAIL"):
             adapter.create_draft_pr(
-                repo_name="demo-org/demo-checkout",
+                repo_name="rizzzabh-06/fakepay-demo-consumer",
                 plan=plan,
                 validation=failed_validation,
                 impact=impact,

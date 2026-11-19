@@ -80,7 +80,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({ onNavigate: _onNavigate })
   const repoBarData = data?.top_repositories || [
     { repo: "BIT-TRACE", count: 51 },
     { repo: "fakepay-nextjs-demo", count: 20 },
-    { repo: "demo-checkout", count: 15 },
+    { repo: "fakepay-demo-consumer", count: 15 },
   ];
 
   // Validation time series data

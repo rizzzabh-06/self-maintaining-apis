@@ -56,7 +56,7 @@ def run_demo():
         old_spec_data=v1_spec,
         new_spec_data=v2_spec,
         repo_path=DEMO_REPO,
-        repo_name="demo-org/demo-checkout",
+        repo_name="rizzzabh-06/fakepay-demo-consumer",
         provider="fakepay",
     )
     elapsed = round(time.time() - start, 2)

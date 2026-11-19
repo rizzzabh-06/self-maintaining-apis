@@ -34,7 +34,7 @@ const MOCK_ACTIVITY: ActivityItem[] = [
   { time: "12:40", event: "Migration validated -- PASS (100%) in isolated sandbox", kind: "success" },
   { time: "12:39", event: "3 breaking changes detected in OpenAPI diff", kind: "warning" },
   { time: "12:38", event: "TypeScript AST scan complete -- 15 usages indexed", kind: "success" },
-  { time: "12:35", event: "demo-checkout repository connected", kind: "info" },
+  { time: "12:35", event: "fakepay-demo-consumer repository connected", kind: "info" },
 ];
 
 const kindDot: Record<ActivityItem["kind"], string> = {
@@ -77,7 +77,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     {
       label: "Monitored Repos",
       value: stats.repos,
-      sub: "Active: demo-checkout (TypeScript)",
+      sub: "Active: fakepay-demo-consumer (TypeScript)",
       icon: FolderGit2,
       iconColor: "var(--blue)",
       tab: "repositories",

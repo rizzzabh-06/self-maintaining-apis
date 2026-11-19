@@ -47,7 +47,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete, 
   
   // GitHub Auth State
   const [githubConnected, setGithubConnected] = useState(false);
-  const [githubAccount, setGithubAccount] = useState("demo-org");
+  const [githubAccount, setGithubAccount] = useState("rizzzabh-06");
   const [githubAvatar, setGithubAvatar] = useState("");
   const [githubToken, setGithubToken] = useState("");
   const [authMethod, setAuthMethod] = useState<"oauth" | "pat">("oauth");
@@ -207,7 +207,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete, 
     } else if (currentStep === 5) {
       setLoading(true);
       try {
-        const targetRepo = selectedRepos[0] || (availableRepos[0] ? availableRepos[0].fullName : "demo-checkout");
+        const targetRepo = selectedRepos[0] || (availableRepos[0] ? availableRepos[0].fullName : "fakepay-demo-consumer");
         const cleanName = targetRepo.split("/").pop()?.replace(/[-.]/g, "_") || "demo_checkout";
         const targetId = `repo_${cleanName}`;
         const res = await triggerRepositoryScan(targetId).catch(() =>
@@ -372,7 +372,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete, 
                 />
                 <div>
                   <div style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--ink)" }}>
-                    {githubAccount !== "demo-org" ? githubAccount : "Rizzabh Workspace Admin"}
+                    {githubAccount !== "rizzzabh-06" ? githubAccount : "Rizzabh Workspace Admin"}
                   </div>
                   <div style={{ color: "var(--ink-light)", fontSize: "0.85rem" }}>admin@example.com</div>
                   <div style={{ marginTop: "8px", display: "flex", gap: "8px" }}>
@@ -699,7 +699,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete, 
                 5. Execute 4-Tier Tree-sitter AST Scan
               </h3>
               <p style={{ color: "var(--ink-light)", fontSize: "0.9rem", maxWidth: "540px", margin: "0 auto 1.5rem auto", lineHeight: 1.6 }}>
-                Shallow clones <strong style={{ color: "var(--ink)" }}>{selectedRepos[0] || "demo-checkout"}</strong> into <code>.repos/</code> and parses TypeScript/JavaScript and Python syntax trees to map API dependencies, endpoint calls, and type definitions.
+                Shallow clones <strong style={{ color: "var(--ink)" }}>{selectedRepos[0] || "fakepay-demo-consumer"}</strong> into <code>.repos/</code> and parses TypeScript/JavaScript and Python syntax trees to map API dependencies, endpoint calls, and type definitions.
               </p>
 
               {scanResult && (

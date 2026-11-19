@@ -68,14 +68,14 @@ def seed():
             db.commit()
             print("  ✓ Created API Version: FakePay v1.0.0")
 
-        # 4. Repository: demo-checkout
-        repo = db.query(Repository).filter(Repository.id == "repo_demo_checkout").first()
+        # 4. Repository: fakepay-demo-consumer
+        repo = db.query(Repository).filter(Repository.id == "repo_fakepay_demo_consumer").first()
         if not repo:
             repo = Repository(
-                id="repo_demo_checkout",
+                id="repo_fakepay_demo_consumer",
                 organization_id=org.id,
-                name="demo-checkout",
-                github_repo="demo-org/demo-checkout",
+                name="fakepay-demo-consumer",
+                github_repo="rizzzabh-06/fakepay-demo-consumer",
                 default_branch="main",
                 language="TypeScript",
                 last_scanned_at=datetime.datetime.utcnow(),
@@ -83,7 +83,7 @@ def seed():
             )
             db.add(repo)
             db.commit()
-            print("  ✓ Created Repository: demo-checkout")
+            print("  ✓ Created Repository: fakepay-demo-consumer")
 
         # 5. Scan repository and persist inventory
         scan_res = scan_repository(DEMO_REPO)

@@ -141,7 +141,7 @@ export const Migration: React.FC = () => {
     setRunning(true);
     simulateSandbox();
     try {
-      const res = await triggerMigration("fakepay", "demo-org/demo-checkout");
+      const res = await triggerMigration("fakepay", "rizzzabh-06/fakepay-demo-consumer");
       setResult(res);
     } catch (err) {
       console.error(err);
@@ -536,7 +536,7 @@ export const Migration: React.FC = () => {
             </h3>
           </div>
           <a
-            href={result?.pipeline_result?.draft_pr?.pr_url || "https://github.com/demo-org/demo-checkout/pull/101"}
+            href={result?.pipeline_result?.draft_pr?.pr_url || "https://github.com/rizzzabh-06/fakepay-demo-consumer"}
             target="_blank"
             rel="noreferrer"
             className="btn-primary"

@@ -53,7 +53,7 @@ class TestWebhookAuthentication:
             "event": "api_version_released",
             "from_version": "1.0.0",
             "to_version": "2.0.0",
-            "repo_name": "demo-org/demo-checkout",
+            "repo_name": "rizzzabh-06/fakepay-demo-consumer",
             "old_spec": _V1_SPEC,
             "new_spec": _V2_SPEC,
             "repo_path": str(_DEMO_REPO),
@@ -136,7 +136,7 @@ class TestGitHubWebhook:
         payload = {
             "ref": "refs/heads/main",
             "repository": {
-                "full_name": "demo-org/demo-checkout",
+                "full_name": "rizzzabh-06/fakepay-demo-consumer",
                 "default_branch": "main",
             },
         }
@@ -158,7 +158,7 @@ class TestGitHubWebhook:
         payload = {
             "ref": "refs/heads/feature/my-branch",
             "repository": {
-                "full_name": "demo-org/demo-checkout",
+                "full_name": "rizzzabh-06/fakepay-demo-consumer",
                 "default_branch": "main",
             },
         }

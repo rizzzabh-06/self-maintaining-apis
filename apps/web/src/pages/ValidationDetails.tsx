@@ -63,7 +63,7 @@ const MOCK_VALIDATIONS: ValidationRun[] = [
   },
   {
     id: "val-002",
-    repo: "demo-checkout",
+    repo: "fakepay-demo-consumer",
     provider: "Stripe v3.1.0",
     status: "failed",
     created_at: "2026-11-09T16:05:00Z",

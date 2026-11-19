@@ -66,13 +66,13 @@ class TestRepositoryManagementAndScan:
         mock_response.json.return_value = [
             {
                 "id": 1,
-                "full_name": "demo-org/demo-checkout",
-                "name": "demo-checkout",
+                "full_name": "rizzzabh-06/fakepay-demo-consumer",
+                "name": "fakepay-demo-consumer",
                 "default_branch": "main",
                 "language": "TypeScript",
                 "private": False,
                 "description": "Demo checkout service",
-                "html_url": "https://github.com/demo-org/demo-checkout",
+                "html_url": "https://github.com/rizzzabh-06/fakepay-demo-consumer",
                 "stargazers_count": 0,
             }
         ]
@@ -98,13 +98,13 @@ class TestRepositoryManagementAndScan:
             "items": [
                 {
                     "id": 1,
-                    "full_name": "demo-org/demo-checkout",
-                    "name": "demo-checkout",
+                    "full_name": "rizzzabh-06/fakepay-demo-consumer",
+                    "name": "fakepay-demo-consumer",
                     "default_branch": "main",
                     "language": "TypeScript",
                     "private": False,
                     "description": "Demo checkout service",
-                    "html_url": "https://github.com/demo-org/demo-checkout",
+                    "html_url": "https://github.com/rizzzabh-06/fakepay-demo-consumer",
                     "stargazers_count": 0,
                 }
             ],
@@ -126,7 +126,7 @@ class TestRepositoryManagementAndScan:
         # 1. Connect
         res = client.post(
             "/api/repositories/connect",
-            json={"github_repo": "demo-org/demo-checkout", "name": "demo-checkout"},
+            json={"github_repo": "rizzzabh-06/fakepay-demo-consumer", "name": "fakepay-demo-consumer"},
         )
         assert res.status_code in (200, 201)
         repo_id = res.json()["id"]

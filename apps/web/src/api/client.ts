@@ -125,7 +125,7 @@ export async function fetchImpact(provider: string = "fakepay") {
 
 export async function triggerMigration(
   provider: string = "fakepay",
-  repoName: string = "demo-org/demo-checkout",
+  repoName: string = "rizzzabh-06/fakepay-demo-consumer",
   repositoryId?: string,
   publishToGithub: boolean = false,
   background: boolean = false

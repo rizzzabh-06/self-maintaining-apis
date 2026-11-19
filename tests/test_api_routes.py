@@ -84,7 +84,7 @@ class TestHealthAndInventoryRoutes:
         assert response.status_code == 200
         repos = response.json()
         assert isinstance(repos, list)
-        assert any(r["name"] == "demo-checkout" for r in repos)
+        assert any(r["name"] == "fakepay-demo-consumer" for r in repos)
 
     def test_list_usages(self):
         response = client.get("/api/inventory/usages?provider=fakepay")
@@ -118,7 +118,7 @@ class TestChangesAndImpactRoutes:
 class TestMigrationAndValidationRoutes:
     @pytest.fixture(autouse=True)
     def _seed_demo_repository(self):
-        """Ensure demo-org/demo-checkout is in the DB before migration tests run."""
+        """Ensure rizzzabh-06/fakepay-demo-consumer is in the DB before migration tests run."""
         from unittest.mock import patch
         with patch(
             "apps.api.app.api.routes.repositories._ensure_repository_local",
@@ -126,7 +126,7 @@ class TestMigrationAndValidationRoutes:
         ):
             client.post(
                 "/api/repositories/connect",
-                json={"github_repo": "demo-org/demo-checkout", "name": "demo-checkout"},
+                json={"github_repo": "rizzzabh-06/fakepay-demo-consumer", "name": "fakepay-demo-consumer"},
             )
 
     def test_trigger_and_query_migration(self):
@@ -134,7 +134,7 @@ class TestMigrationAndValidationRoutes:
         from unittest.mock import patch
         payload = {
             "provider": "fakepay",
-            "repo_name": "demo-org/demo-checkout",
+            "repo_name": "rizzzabh-06/fakepay-demo-consumer",
             "create_draft_pr": True,
             "old_spec": _V1_SPEC,
             "new_spec": _V2_SPEC,
@@ -167,7 +167,7 @@ class TestMigrationAndValidationRoutes:
         from unittest.mock import patch
         payload = {
             "provider": "fakepay",
-            "repo_name": "demo-org/demo-checkout",
+            "repo_name": "rizzzabh-06/fakepay-demo-consumer",
             "background": True,
             "old_spec": _V1_SPEC,
             "new_spec": _V2_SPEC,

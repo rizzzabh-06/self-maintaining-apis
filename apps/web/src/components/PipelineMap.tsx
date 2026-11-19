@@ -524,7 +524,7 @@ export const PipelineMap: React.FC<PipelineMapProps> = ({ onStageSelect, compact
           {/* Quick Action */}
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
             <a
-              href="https://github.com/demo-org/demo-checkout/pull/101"
+              href="https://github.com/rizzzabh-06/fakepay-demo-consumer"
               target="_blank"
               rel="noreferrer"
               className="btn-secondary btn-sm"
